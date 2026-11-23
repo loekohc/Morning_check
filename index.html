@@ -262,8 +262,12 @@
                     </div>
                 </div>
 
-                <!-- 기온 & 날씨 상태 헤드라인 + 음성 듣기 버튼 -->
-                <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-sky-50 p-3 rounded-2xl border-2 border-amber-100 mb-3">
+                <div id="today-date" class="text-sky-600 text-sm sm:text-base tracking-wide mb-2">
+                    2026년 11월 23일 월요일
+                </div>
+
+                <!-- 기온 & 날씨 상태 헤드라인 -->
+                <div class="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-sky-50 p-3 rounded-2xl border-2 border-amber-100 mb-3">
                     <div class="flex items-center gap-2.5">
                         <div id="weather-main-icon" class="text-3xl sm:text-4xl drop-shadow-sm">🌤️</div>
                         <div>
@@ -275,13 +279,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- 옷차림 음성 읽어주기 버튼 -->
-                    <button onclick="speakOutfitGuide()"
-                        class="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 active:scale-95 text-white px-3 py-2 rounded-xl shadow-md transition text-sm sm:text-base shrink-0">
-                        <span>🗣️</span>
-                        <span>듣기</span>
-                    </button>
                 </div>
 
                 <!-- 중앙: 곰/토끼 캐릭터 옷차림 SVG 렌더링 영역 -->
@@ -314,19 +311,14 @@
             <!-- 우측 상단: 타이틀 & 컨트롤 + 가로형 프로그레스 바 -->
             <header class="w-full">
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                    <!-- 날짜 및 타이틀 -->
+                    <!-- 타이틀 -->
                     <div class="flex items-center gap-3">
                         <div class="bg-amber-400 text-white text-2xl sm:text-3xl p-2.5 sm:p-3 rounded-2xl shadow-md">
                             🎒
                         </div>
-                        <div>
-                            <div id="today-date" class="text-sky-600 text-sm sm:text-base tracking-wide">
-                                2026년 11월 23일 월요일
-                            </div>
-                            <h1 class="text-2xl sm:text-3xl xl:text-4xl text-slate-800 tracking-tight">
-                                오늘의 아침 등교 미션!
-                            </h1>
-                        </div>
+                        <h1 class="text-2xl sm:text-3xl xl:text-4xl text-slate-800 tracking-tight">
+                            오늘의 아침 등교 미션!
+                        </h1>
                     </div>
 
                     <!-- 우측 컨트롤 버튼 (소리 켜기/끄기, 다시 하기) -->
@@ -553,6 +545,8 @@
         let currentWeatherState = {
             presetId: 'cool',
             temp: 15,
+            weatherCode: 0,
+            windSpeed: 0,
             locationName: '서울 (기본)',
             isLive: false,
             conditionLabel: '선선한 날씨'
@@ -610,7 +604,7 @@
         }
 
         /**
-         * 3. 효과음 (Web Audio API) & 한국어 음성 안내 (SpeechSynthesis)
+         * 3. 효과음 (Web Audio API)
          */
         let audioCtx = null;
 
@@ -704,10 +698,149 @@
             }
         }
 
+        function getCurrentSeason() {
+            const month = new Date().getMonth() + 1;
+            if (month >= 3 && month <= 5) return 'spring';
+            if (month >= 6 && month <= 8) return 'summer';
+            if (month >= 9 && month <= 11) return 'autumn';
+            return 'winter';
+        }
+
+        function getWeatherSceneType(weatherCode, windSpeed) {
+            if ([95, 96, 99].includes(weatherCode)) return 'thunderstorm';
+            if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return 'snow';
+            if (windSpeed >= 63) return 'typhoon';
+            if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) return 'rain';
+            if (windSpeed >= 30) return 'wind';
+            if ([45, 48].includes(weatherCode)) return 'fog';
+            if ([1, 2, 3].includes(weatherCode)) return 'cloudy';
+            return 'clear';
+        }
+
+        function renderWeatherBackground(season, weather) {
+            const seasonScenes = {
+                spring: {
+                    sky: 'skySpringGrad',
+                    ground: '#A7F3D0',
+                    decorations: `
+                        <g fill="#FDA4AF">
+                            <circle cx="34" cy="210" r="3"/><circle cx="39" cy="214" r="3"/><circle cx="34" cy="218" r="3"/><circle cx="29" cy="214" r="3"/>
+                            <circle cx="206" cy="205" r="3"/><circle cx="211" cy="209" r="3"/><circle cx="206" cy="213" r="3"/><circle cx="201" cy="209" r="3"/>
+                        </g>
+                        <g fill="#F472B6" opacity="0.8"><ellipse cx="22" cy="67" rx="3" ry="6" transform="rotate(-35 22 67)"/><ellipse cx="216" cy="94" rx="3" ry="6" transform="rotate(30 216 94)"/></g>
+                    `
+                },
+                summer: {
+                    sky: 'skySummerGrad',
+                    ground: '#86EFAC',
+                    sun: `
+                        <g transform="translate(198 43)">
+                            <circle r="23" fill="#FDE047" opacity="0.42"/><circle r="15" fill="#FACC15" stroke="#EAB308" stroke-width="1.5"/>
+                            <g stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"><path d="M0-22v-5M0 22v5M-22 0h-5M22 0h5M-16-16l-4-4M16 16l4 4M16-16l4-4M-16 16l-4 4"/></g>
+                        </g>
+                    `,
+                    decorations: `
+                        <g fill="#FDE047"><circle cx="28" cy="213" r="3"/><circle cx="213" cy="217" r="3"/></g>
+                    `
+                },
+                autumn: {
+                    sky: 'skyAutumnGrad',
+                    ground: '#D6A36B',
+                    decorations: `
+                        <g fill="#C2410C">
+                            <path d="M27 67q10-2 7 8-8 9-12 1 1-6 5-9m-3 8 9-6"/>
+                            <path d="M212 91q10-2 7 8-8 9-12 1 1-6 5-9m-3 8 9-6"/>
+                            <path d="M51 194q10-2 7 8-8 9-12 1 1-6 5-9m-3 8 9-6"/>
+                        </g>
+                        <g fill="#F97316"><circle cx="38" cy="216" r="3"/><circle cx="204" cy="213" r="3"/></g>
+                    `
+                },
+                winter: {
+                    sky: 'skyWinterGrad',
+                    ground: '#F1F5F9',
+                    decorations: `
+                        <g>
+                            <path d="M20 220 34 184 48 220Z" fill="#64748B"/><path d="m25 207 9-23 9 23Z" fill="#86A3B5"/>
+                            <path d="M192 220 207 181 222 220Z" fill="#64748B"/><path d="m198 205 9-24 9 24Z" fill="#86A3B5"/>
+                            <path d="m29 195 5-11 5 11M202 193l5-12 5 12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+                        </g>
+                    `
+                }
+            };
+            const seasonScene = seasonScenes[season] || seasonScenes.spring;
+            const base = `
+                <rect x="0" y="0" width="240" height="250" fill="url(#${seasonScene.sky})"/>
+                ${['clear', 'cloudy'].includes(weather) ? seasonScene.sun || '' : ''}
+                <path d="M0 223 Q62 210 120 222 Q179 209 240 222 L240 250 L0 250Z" fill="${seasonScene.ground}"/>
+                ${seasonScene.decorations}
+                <ellipse cx="120" cy="234" rx="50" ry="7" fill="#475569" opacity="0.13"/>
+            `;
+            const overlays = {
+                cloudy: `
+                    <g fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2" opacity="0.9">
+                        <path d="M24 49a10 10 0 0 1 19-4 12 12 0 0 1 21 5H24Z"/>
+                        <path d="M168 66a9 9 0 0 1 17-4 11 11 0 0 1 19 5h-36Z"/>
+                    </g>
+                `,
+                fog: `
+                    <g fill="#F8FAFC" opacity="0.58">
+                        <path d="M0 82 Q55 71 112 82 T240 82v10Q180 82 120 92T0 92Z"/>
+                        <path d="M0 118 Q60 108 120 118 T240 118v9Q180 118 120 127T0 127Z"/>
+                    </g>
+                `,
+                rain: `
+                    <g fill="#64748B" stroke="#475569" stroke-width="1" opacity="0.88">
+                        <path d="M27 49a11 11 0 0 1 21-4 13 13 0 0 1 22 5H27Z"/>
+                    </g>
+                    <g stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" opacity="0.9">
+                        <path d="m39 58-5 13m18-13-5 13m18-13-5 13M28 117l-5 13m28-13-5 13m151-13-5 13m20-13-5 13"/>
+                    </g>
+                    <ellipse cx="120" cy="231" rx="75" ry="8" fill="#38BDF8" opacity="0.22"/>
+                `,
+                snow: `
+                    <g fill="#FFFFFF" stroke="#BFDBFE" stroke-width="0.8" opacity="0.96">
+                        <circle cx="25" cy="42" r="3"/><circle cx="70" cy="88" r="3.5"/><circle cx="202" cy="40" r="4"/>
+                        <circle cx="190" cy="104" r="3"/><circle cx="39" cy="147" r="3.5"/><circle cx="213" cy="166" r="3"/>
+                        <path d="M116 33v12m-6-6h12m-10-4 8 8m0-8-8 8M160 133v12m-6-6h12m-10-4 8 8m0-8-8 8"/>
+                    </g>
+                    <path d="M0 226 Q66 214 121 225 Q180 213 240 226v24H0Z" fill="#FFFFFF" opacity="0.72"/>
+                `,
+                wind: `
+                    <g fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity="0.78">
+                        <path d="M10 72q35-16 68 0t59 0m-118 12q28-12 54 0t45 0m93-23q-19-9-39 0"/>
+                    </g>
+                    <g fill="${season === 'autumn' ? '#EA580C' : season === 'spring' ? '#F472B6' : '#FACC15'}" opacity="0.9">
+                        <path d="M31 102q10-2 7 8-8 9-12 1 1-6 5-9m-3 8 9-6"/>
+                        <path d="M197 128q10-2 7 8-8 9-12 1 1-6 5-9m-3 8 9-6"/>
+                    </g>
+                `,
+                typhoon: `
+                    <rect x="0" y="0" width="240" height="250" fill="#334155" opacity="0.24"/>
+                    <g fill="#475569" stroke="#334155" stroke-width="1.2" opacity="0.86">
+                        <path d="M17 53a13 13 0 0 1 25-5 15 15 0 0 1 27 6H17Z"/>
+                        <path d="M161 72a11 11 0 0 1 21-4 13 13 0 0 1 24 5h-45Z"/>
+                    </g>
+                    <g fill="none" stroke="#E2E8F0" stroke-width="2.2" stroke-linecap="round" opacity="0.82">
+                        <path d="M12 93q32-22 65-3 21 12 41-2M0 111q35-18 65 0t56 0m86-21q-25-14-48 0"/>
+                    </g>
+                    <g stroke="#7DD3FC" stroke-width="2.3" stroke-linecap="round" opacity="0.85"><path d="m44 62-6 15m24-15-6 15m130 36-6 15m22-15-6 15"/></g>
+                `,
+                thunderstorm: `
+                    <rect x="0" y="0" width="240" height="250" fill="#1E293B" opacity="0.34"/>
+                    <g fill="#475569" stroke="#334155" stroke-width="1.4" opacity="0.96">
+                        <path d="M18 53a13 13 0 0 1 25-5 15 15 0 0 1 27 6H18Z"/>
+                    </g>
+                    <g stroke="#7DD3FC" stroke-width="2.2" stroke-linecap="round" opacity="0.86"><path d="m37 62-5 14m20-14-5 14m-20 66-5 14m32-14-5 14m146-77-5 14m20-14-5 14"/></g>
+                    <path d="m187 55-16 29h13l-9 24 29-34h-15l11-19Z" fill="#FDE047" stroke="#F59E0B" stroke-width="1.5" stroke-linejoin="round"/>
+                `
+            };
+            return `${base}${overlays[weather] || ''}`;
+        }
+
         /**
          * 4. 동화책 일러스트풍 정교한 곰 & 토끼 캐릭터 + 입체 의상 SVG 렌더링
          */
-        function renderCharacterSVG(outfitType, characterType) {
+        function renderCharacterSVG(outfitType, characterType, season, weather) {
             const isBear = characterType === 'bear';
 
             const defsSVG = `
@@ -738,107 +871,30 @@
                         <stop offset="0%" stop-color="#FDA4AF"/>
                         <stop offset="100%" stop-color="#F472B6"/>
                     </linearGradient>
-                    <linearGradient id="skyDayGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.85"/>
-                        <stop offset="68%" stop-color="#FEF9C3" stop-opacity="0.35"/>
-                        <stop offset="100%" stop-color="#DCFCE7" stop-opacity="0.55"/>
+                    <linearGradient id="skySpringGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FBCFE8"/>
+                        <stop offset="68%" stop-color="#FEF9C3" stop-opacity="0.7"/>
+                        <stop offset="100%" stop-color="#DCFCE7"/>
+                    </linearGradient>
+                    <linearGradient id="skySummerGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#7DD3FC"/>
+                        <stop offset="68%" stop-color="#FEF08A" stop-opacity="0.72"/>
+                        <stop offset="100%" stop-color="#86EFAC"/>
+                    </linearGradient>
+                    <linearGradient id="skyAutumnGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FDBA74"/>
+                        <stop offset="68%" stop-color="#FDE68A" stop-opacity="0.72"/>
+                        <stop offset="100%" stop-color="#D6A36B"/>
                     </linearGradient>
                     <linearGradient id="skyWinterGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.85"/>
                         <stop offset="70%" stop-color="#F8FAFC" stop-opacity="0.6"/>
                         <stop offset="100%" stop-color="#E2E8F0" stop-opacity="0.8"/>
                     </linearGradient>
-                    <linearGradient id="skyRainGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#CBD5E1" stop-opacity="0.75"/>
-                        <stop offset="70%" stop-color="#E0F2FE" stop-opacity="0.5"/>
-                        <stop offset="100%" stop-color="#BAE6FD" stop-opacity="0.55"/>
-                    </linearGradient>
                 </defs>
             `;
 
-            // 동화책 배경 풍경
-            let bgWeatherElements = '';
-            if (outfitType === 'winter_heavy') {
-                bgWeatherElements = `
-                    <rect x="0" y="0" width="240" height="250" fill="url(#skyWinterGrad)"/>
-                    <g fill="#FFFFFF" opacity="0.95">
-                        <circle cx="34" cy="36" r="4"/><circle cx="204" cy="44" r="4.5"/>
-                        <circle cx="54" cy="104" r="3"/><circle cx="194" cy="116" r="3.8"/>
-                        <circle cx="26" cy="158" r="2.8"/><circle cx="212" cy="166" r="3.2"/>
-                        <path d="M182 24 L182 38 M175 31 L189 31 M177 26 L187 36 M187 26 L177 36" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M42 66 L42 78 M36 72 L48 72 M38 68 L46 76 M46 68 L38 76" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
-                    </g>
-                    <path d="M0 225 Q65 214 125 224 Q185 215 240 225 L240 250 L0 250 Z" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
-                    <ellipse cx="120" cy="233" rx="50" ry="7.5" fill="#94A3B8" opacity="0.35"/>
-                `;
-            } else if (outfitType === 'rainy_gear') {
-                bgWeatherElements = `
-                    <rect x="0" y="0" width="240" height="250" fill="url(#skyRainGrad)"/>
-                    <!-- 동화풍 비구름 -->
-                    <g fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" opacity="0.92">
-                        <circle cx="38" cy="34" r="12"/><circle cx="52" cy="30" r="15"/><circle cx="68" cy="34" r="12"/><circle cx="80" cy="37" r="9"/>
-                        <rect x="38" y="34" width="42" height="12" rx="6" stroke="none"/>
-                    </g>
-                    <g stroke="#38BDF8" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
-                        <path d="M42 54 L36 68"/><path d="M58 52 L52 66"/><path d="M74 55 L68 69"/>
-                        <path d="M32 115 L26 129"/><path d="M48 158 L42 172"/><path d="M208 130 L202 144"/>
-                    </g>
-                    <path d="M0 227 Q120 218 240 227 L240 250 L0 250 Z" fill="#E0F2FE"/>
-                    <ellipse cx="120" cy="234" rx="76" ry="10.5" fill="#7DD3FC" opacity="0.6"/>
-                    <ellipse cx="120" cy="234" rx="52" ry="6" fill="none" stroke="#38BDF8" stroke-width="1.6"/>
-                    <ellipse cx="120" cy="233" rx="45" ry="6" fill="#0369A1" opacity="0.22"/>
-                `;
-            } else if (outfitType === 'summer_short') {
-                bgWeatherElements = `
-                    <rect x="0" y="0" width="240" height="250" fill="url(#skyDayGrad)"/>
-                    <g transform="translate(196, 38)">
-                        <circle cx="0" cy="0" r="25" fill="#FDE047" opacity="0.45"/>
-                        <circle cx="0" cy="0" r="16" fill="#FACC15" stroke="#EAB308" stroke-width="1.5"/>
-                        <g stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round">
-                            <line x1="0" y1="-23" x2="0" y2="-19"/><line x1="0" y1="19" x2="0" y2="23"/>
-                            <line x1="-23" y1="0" x2="-19" y2="0"/><line x1="19" y1="0" x2="23" y2="0"/>
-                            <line x1="-16" y1="-16" x2="-13" y2="-13"/><line x1="13" y1="13" x2="16" y2="16"/>
-                            <line x1="16" y1="-16" x2="13" y2="-13"/><line x1="-13" y1="13" x2="-16" y2="16"/>
-                        </g>
-                    </g>
-                    <path d="M0 227 Q70 217 120 225 Q175 216 240 227 L240 250 L0 250 Z" fill="#BBF7D0"/>
-                    <g transform="translate(38, 224)">
-                        <circle cx="0" cy="-4" r="3.2" fill="#FDA4AF"/><circle cx="4" cy="0" r="3.2" fill="#FDA4AF"/>
-                        <circle cx="0" cy="4" r="3.2" fill="#FDA4AF"/><circle cx="-4" cy="0" r="3.2" fill="#FDA4AF"/>
-                        <circle cx="0" cy="0" r="2.2" fill="#FDE047"/>
-                    </g>
-                    <g transform="translate(202, 222)">
-                        <circle cx="0" cy="-3.5" r="3" fill="#93C5FD"/><circle cx="3.5" cy="0" r="3" fill="#93C5FD"/>
-                        <circle cx="0" cy="3.5" r="3" fill="#93C5FD"/><circle cx="-3.5" cy="0" r="3" fill="#93C5FD"/>
-                        <circle cx="0" cy="0" r="2" fill="#FDE047"/>
-                    </g>
-                    <ellipse cx="120" cy="234" rx="46" ry="6.5" fill="#15803D" opacity="0.22"/>
-                `;
-            } else {
-                bgWeatherElements = `
-                    <rect x="0" y="0" width="240" height="250" fill="url(#skyDayGrad)"/>
-                    <g fill="#FFFFFF" stroke="#E0F2FE" stroke-width="1.2" opacity="0.95">
-                        <circle cx="38" cy="36" r="11"/><circle cx="52" cy="33" r="14.5"/><circle cx="68" cy="36" r="11"/>
-                        <rect x="38" y="34" width="30" height="13" rx="6" stroke="none"/>
-                    </g>
-                    <g fill="#FFFFFF" stroke="#E0F2FE" stroke-width="1.2" opacity="0.9">
-                        <circle cx="182" cy="48" r="9"/><circle cx="195" cy="45" r="12"/><circle cx="208" cy="48" r="8.5"/>
-                        <rect x="182" y="46" width="26" height="10" rx="5" stroke="none"/>
-                    </g>
-                    <path d="M0 227 Q70 217 120 225 Q175 216 240 227 L240 250 L0 250 Z" fill="#BBF7D0"/>
-                    <g transform="translate(42, 225)">
-                        <circle cx="0" cy="-3.2" r="2.8" fill="#F9A8D4"/><circle cx="3.2" cy="0" r="2.8" fill="#F9A8D4"/>
-                        <circle cx="0" cy="3.2" r="2.8" fill="#F9A8D4"/><circle cx="-3.2" cy="0" r="2.8" fill="#F9A8D4"/>
-                        <circle cx="0" cy="0" r="1.9" fill="#FACC15"/>
-                    </g>
-                    <g transform="translate(198, 223)">
-                        <circle cx="0" cy="-3.2" r="2.8" fill="#C4B5FD"/><circle cx="3.2" cy="0" r="2.8" fill="#C4B5FD"/>
-                        <circle cx="0" cy="3.2" r="2.8" fill="#C4B5FD"/><circle cx="-3.2" cy="0" r="2.8" fill="#C4B5FD"/>
-                        <circle cx="0" cy="0" r="1.9" fill="#FACC15"/>
-                    </g>
-                    <ellipse cx="120" cy="234" rx="46" ry="6.5" fill="#15803D" opacity="0.22"/>
-                `;
-            }
+            const bgWeatherElements = renderWeatherBackground(season, weather);
 
             const furFill = isBear ? 'url(#bearFurGrad)' : 'url(#rabbitFurGrad)';
             const furStroke = isBear ? '#78350F' : '#DB2777';
@@ -1411,7 +1467,9 @@
             }
 
             if (stageEl) {
-                stageEl.innerHTML = renderCharacterSVG(preset.outfitType, currentCharacter);
+                const season = getCurrentSeason();
+                const weather = getWeatherSceneType(currentWeatherState.weatherCode, currentWeatherState.windSpeed);
+                stageEl.innerHTML = renderCharacterSVG(preset.outfitType, currentCharacter, season, weather);
             }
 
         }
@@ -1425,12 +1483,6 @@
             renderWeatherOutfitBoard();
         }
 
-        function speakOutfitGuide() {
-            const preset = WEATHER_PRESETS.find(p => p.id === currentWeatherState.presetId) || WEATHER_PRESETS[2];
-            const msg = `오늘 기온은 ${Math.round(currentWeatherState.temp)}도, ${preset.conditionText}예요. ${preset.headline}`;
-            speakKorean(msg);
-        }
-
         async function fetchLiveWeather(userTriggered = false) {
             const locEl = document.getElementById('location-label');
             if (locEl && userTriggered) {
@@ -1439,17 +1491,20 @@
 
             const queryWeather = async (lat, lon, label) => {
                 try {
-                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`;
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh&timezone=Asia%2FSeoul`;
                     const res = await fetch(url);
                     if (!res.ok) throw new Error('날씨 API 응답 오류');
                     const data = await res.json();
                     if (data && data.current) {
                         const temp = data.current.temperature_2m;
                         const code = data.current.weather_code;
+                        const windSpeed = data.current.wind_speed_10m ?? 0;
                         const matchedPresetId = getPresetIdFromWeather(temp, code);
                         currentWeatherState = {
                             presetId: matchedPresetId,
                             temp: temp,
+                            weatherCode: code,
+                            windSpeed: windSpeed,
                             locationName: `${label} 실시간`,
                             isLive: true,
                             conditionLabel: ''
@@ -1515,10 +1570,10 @@
                                 ${mission.icon}
                             </div>
                             <div class="text-left">
-                                <h2 class="text-xl sm:text-2xl text-slate-800 mb-1 leading-tight ${isDone ? 'line-through decoration-emerald-500 decoration-4 opacity-75' : ''}">
+                                <h2 class="text-xl sm:text-2xl text-slate-800 mb-1 leading-tight break-keep ${isDone ? 'line-through decoration-emerald-500 decoration-4 opacity-75' : ''}">
                                     ${mission.title}
                                 </h2>
-                                <p class="text-sm sm:text-base text-slate-600 leading-snug">
+                                <p class="text-sm sm:text-base text-slate-600 leading-snug break-keep">
                                     ${mission.subtitle}
                                 </p>
                             </div>
