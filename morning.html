@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>오늘의 아침 등교 미션!</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: 아이들이 읽기 좋고 귀여운 주아체(Jua) 및 깔끔한 본고딕(Noto Sans KR) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- 축하 폭죽 효과 라이브러리 (Canvas Confetti) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* 기본 폰트 및 터치 최적화 스타일 */
+        body {
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #FFF8E7 0%, #E0F2FE 50%, #F3E8FF 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            overflow-x: hidden;
+        }
+
+        /* 카드 터치 시 쫀득한 탄성 효과 */
+        .mission-card {
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mission-card:active {
+            transform: scale(0.94);
+        }
+
+        /* 미완료 상태 카드 스타일 */
+        .mission-card.uncompleted {
+            background: #FFFFFF;
+            border: 4px solid #E2E8F0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        .mission-card.uncompleted:hover {
+            border-color: #93C5FD;
+            transform: translateY(-4px);
+        }
+
+        /* 완료 상태 카드 스타일 */
+        .mission-card.completed {
+            background: linear-gradient(145deg, #FEF9C3 0%, #DCFCE7 100%);
+            border: 4px solid #22C55E;
+            box-shadow: 0 12px 28px -5px rgba(34, 197, 94, 0.25);
+            transform: scale(1.02);
+        }
+
+        /* 도장 찍히는 애니메이션 */
+        @keyframes stampPop {
+            0% {
+                opacity: 0;
+                transform: scale(2.5) rotate(-25deg);
+            }
+            60% {
+                opacity: 1;
+                transform: scale(0.9) rotate(-8deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(-10deg);
+            }
+        }
+
+        .stamp-badge {
+            animation: stampPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* 이모지 둥실둥실 애니메이션 */
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .floating-emoji {
+            animation: floatEmoji 3s ease-in-out infinite;
+        }
+
+        /* 프로그레스 바 로켓 움직임 */
+        .rocket-tracker {
+            transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* 프로그레스 바 채우기 애니메이션 */
+        .progress-fill {
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(90deg, #60A5FA 0%, #34D399 50%, #FBBF24 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        /* 모달 등장 애니메이션 */
+        @keyframes modalBounce {
+            0% { opacity: 0; transform: scale(0.7); }
+            70% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            animation: modalBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* 캐릭터 숨쉬기/살랑살랑 애니메이션 */
+        @keyframes characterSway {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(0.8deg); }
+        }
+
+        .character-animate {
+            animation: characterSway 3.5s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        /* 날씨 칩 버튼 활성화 스타일 */
+        .weather-chip {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .weather-chip:active {
+            transform: scale(0.94);
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between p-3 sm:p-5 lg:p-6">
+
+    <!-- 전체 메인 컨테이너: 가로 넓은 화면(lg 이상)에서는 좌측(날씨/옷차림) + 우측(프로그레스 + 2행3열 미션) 2단 구성 -->
+    <div class="max-w-[1440px] w-full mx-auto flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-stretch">
+
+        <!-- [좌측 패널] 세로형 오늘의 날씨 & 캐릭터 추천 옷차림 보드 (가로 화면에서 4칸 차지) -->
+        <aside id="weather-outfit-card" class="lg:col-span-4 bg-white/95 backdrop-blur-md border-4 border-amber-200 rounded-[2rem] p-4 sm:p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
+            <div>
+                <!-- 상단 바: 위치/날씨 요약 & 캐릭터 전환 토글 -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b-2 border-amber-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full text-xs sm:text-sm flex items-center gap-1">
+                            <span>📍</span>
+                            <span id="location-label">서울 날씨 불러오는 중...</span>
+                        </span>
+                        <button onclick="fetchLiveWeather(true)" title="실시간 날씨 새로고침"
+                            class="bg-sky-50 hover:bg-sky-100 active:scale-95 text-sky-600 px-2 py-1 rounded-full text-xs sm:text-sm border border-sky-200 transition">
+                            🔄
+                        </button>
+                    </div>
+
+                    <!-- 캐릭터 선택 전환 토글 (곰 / 토끼) -->
+                    <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200">
+                        <button id="char-bear-btn" onclick="setCharacterType('bear')"
+                            class="px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 bg-amber-600 text-white shadow-sm">
+                            <span>🐻</span><span>곰</span>
+                        </button>
+                        <button id="char-rabbit-btn" onclick="setCharacterType('rabbit')"
+                            class="px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 text-slate-600 hover:text-slate-900">
+                            <span>🐰</span><span>토끼</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 기온 & 날씨 상태 헤드라인 + 음성 듣기 버튼 -->
+                <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-sky-50 p-3 rounded-2xl border-2 border-amber-100 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div id="weather-main-icon" class="text-3xl sm:text-4xl drop-shadow-sm">🌤️</div>
+                        <div>
+                            <div class="flex items-baseline gap-1.5">
+                                <span id="weather-temp-display" class="text-2xl sm:text-3xl text-slate-800 tracking-tight">15°C</span>
+                                <span id="weather-condition-badge" class="bg-white text-sky-700 border border-sky-200 px-2.5 py-0.5 rounded-full text-xs sm:text-sm">
+                                    선선한 날씨
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 옷차림 음성 읽어주기 버튼 -->
+                    <button onclick="speakOutfitGuide()"
+                        class="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 active:scale-95 text-white px-3 py-2 rounded-xl shadow-md transition text-sm sm:text-base shrink-0">
+                        <span>🗣️</span>
+                        <span>듣기</span>
+                    </button>
+                </div>
+
+                <!-- 중앙: 곰/토끼 캐릭터 옷차림 SVG 렌더링 영역 -->
+                <div class="flex flex-col items-center justify-center my-2">
+                    <div id="character-stage" class="w-full max-w-[210px] sm:max-w-[230px] lg:max-w-[225px] aspect-[4/4.2] rounded-3xl bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 border-4 border-white shadow-inner flex items-center justify-center relative overflow-hidden p-2">
+                        <!-- JavaScript에서 기온/날씨/캐릭터에 따라 SVG가 렌더링됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 추천 옷차림 타이틀 & 아이 눈높이 설명 & 아이템 태그 -->
+                <div class="bg-white border-2 border-slate-100 rounded-2xl p-3 sm:p-3.5 shadow-sm mt-2">
+                    <p id="outfit-headline" class="text-base sm:text-lg text-amber-700 mb-1 leading-snug">
+                        포근한 가디건이나 맨투맨을 입어요!
+                    </p>
+                    <p id="outfit-description" class="text-sm sm:text-base text-slate-600 leading-relaxed mb-2.5">
+                        아침 공기가 조금 선선해요. 예쁜 맨투맨이나 긴팔 티셔츠 위에 가디건을 걸치면 학교 갈 때 딱 좋아요!
+                    </p>
+                    <!-- 추천 의상 아이템 해시태그 -->
+                    <div id="outfit-tags" class="flex flex-wrap gap-1.5">
+                        <!-- JS 렌더링 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 하단: 날씨·기온대 직접 선택할 수 있는 퀵 버튼 (3열 2행) -->
+            <div class="mt-3 pt-2.5 border-t-2 border-amber-100/80">
+                <div class="text-xs text-slate-400 mb-1.5">
+                    👆 날씨를 눌러 다른 옷차림도 미리 볼 수 있어요!
+                </div>
+                <div id="weather-preset-buttons" class="grid grid-cols-3 gap-1.5">
+                    <!-- JS에서 6가지 날씨/기온 버튼 생성 -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- [우측 영역] 상단 헤더 + 가로 프로그레스 바 / 하단 2행 3열 미션 카드 그리드 (가로 화면에서 8칸 차지) -->
+        <div class="lg:col-span-8 flex flex-col justify-between gap-4">
+
+            <!-- 우측 상단: 타이틀 & 컨트롤 + 가로형 프로그레스 바 -->
+            <header class="w-full">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <!-- 날짜 및 타이틀 -->
+                    <div class="flex items-center gap-3">
+                        <div class="bg-amber-400 text-white text-2xl sm:text-3xl p-2.5 sm:p-3 rounded-2xl shadow-md">
+                            🎒
+                        </div>
+                        <div>
+                            <div id="today-date" class="text-sky-600 text-sm sm:text-base tracking-wide">
+                                2026년 11월 23일 월요일
+                            </div>
+                            <h1 class="text-2xl sm:text-3xl xl:text-4xl text-slate-800 tracking-tight">
+                                오늘의 아침 등교 미션!
+                            </h1>
+                        </div>
+                    </div>
+
+                    <!-- 우측 컨트롤 버튼 (소리 켜기/끄기, 다시 하기) -->
+                    <div class="flex items-center gap-2">
+                        <button id="sound-toggle-btn" onclick="toggleSound()" 
+                            class="flex items-center gap-1.5 bg-white hover:bg-sky-50 active:scale-95 text-slate-700 border-2 border-slate-200 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-sm transition text-sm sm:text-base">
+                            <span id="sound-icon" class="text-lg sm:text-xl">🔊</span>
+                            <span id="sound-label">소리 켜짐</span>
+                        </button>
+
+                        <button id="reset-btn" onclick="openResetConfirm()" 
+                            class="flex items-center gap-1.5 bg-white hover:bg-rose-50 active:scale-95 text-rose-500 border-2 border-rose-200 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-sm transition text-sm sm:text-base">
+                            <span class="text-lg">🔄</span>
+                            <span>다시 시작</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 가로형 프로그레스 바 카드 -->
+                <div class="bg-white/95 backdrop-blur-sm border-4 border-sky-200 rounded-3xl p-4 sm:p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl sm:text-2xl">🚀</span>
+                            <span class="text-lg sm:text-xl text-slate-700">학교 출발 준비율</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span id="step-counter" class="bg-sky-100 text-sky-700 px-3 py-0.5 rounded-full text-base sm:text-lg">
+                                0 / 6 완료
+                            </span>
+                            <span id="percent-text" class="text-2xl sm:text-3xl text-emerald-600">
+                                0%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 프로그레스 트랙 -->
+                    <div class="relative pt-4 pb-1">
+                        <!-- 트랙 배경 -->
+                        <div class="w-full h-6 sm:h-8 bg-slate-100 rounded-full overflow-hidden border-2 border-slate-200 p-1">
+                            <div id="progress-bar-fill" class="progress-fill h-full rounded-full" style="width: 0%;"></div>
+                        </div>
+                        <!-- 트랙 위를 달리는 로켓 아이콘 -->
+                        <div id="rocket-tracker" class="rocket-tracker absolute top-0 text-3xl sm:text-4xl transform -translate-x-1/2 pointer-events-none drop-shadow" style="left: 3%;">
+                            🚀
+                        </div>
+                        <!-- 도착지 학교 아이콘 -->
+                        <div class="absolute right-0 -top-1 text-3xl sm:text-4xl pointer-events-none">
+                            🏫
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 우측 하단: 2행 3열 여섯 가지 미션 카드 그리드 -->
+            <main class="w-full flex-1 flex flex-col justify-center">
+                <div id="mission-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-rows-2 gap-3.5 sm:gap-4 w-full h-full">
+                    <!-- JavaScript에서 미션 카드 6개(2행 3열)가 렌더링됩니다 -->
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- 하단 안내 문구 -->
+    <footer class="max-w-[1440px] w-full mx-auto text-center mt-4 text-slate-500 text-sm sm:text-base">
+        💡 미션을 다 끝냈다면 카드를 꾹 눌러보세요! 잘못 눌렀을 땐 한 번 더 누르면 취소돼요.
+    </footer>
+
+    <!-- 100% 완료 축하 모달 -->
+    <div id="celebration-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white border-8 border-amber-300 rounded-[2.5rem] max-w-lg w-full p-6 sm:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div class="text-6xl sm:text-7xl mb-4 animate-bounce">🎉🏆🎉</div>
+            <h2 class="text-3xl sm:text-5xl text-amber-500 mb-3 tracking-tight">
+                등교 준비 완료!
+            </h2>
+            <p class="text-xl sm:text-2xl text-slate-700 mb-6 leading-relaxed">
+                6가지 아침 미션을 모두 끝냈어요!<br>
+                오늘도 파이팅! 즐거운 학교 다녀오세요! 🏫✨
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="closeCelebrationModal()" 
+                    class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xl sm:text-2xl px-8 py-4 rounded-2xl shadow-lg transition w-full">
+                    확인했어요! 👍
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 초기화 확인 커스텀 모달 -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white border-4 border-rose-200 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl">
+            <div class="text-5xl mb-3">🔄</div>
+            <h3 class="text-2xl sm:text-3xl text-slate-800 mb-2">처음부터 다시 할까요?</h3>
+            <p class="text-lg text-slate-600 mb-6">완료한 미션 도장이 모두 지워집니다.</p>
+            <div class="flex gap-3">
+                <button onclick="closeResetConfirm()" 
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xl py-3.5 rounded-2xl transition">
+                    아니요
+                </button>
+                <button onclick="confirmReset()" 
+                    class="flex-1 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-xl py-3.5 rounded-2xl shadow-md transition">
+                    네, 다시 할래요
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 1. 미션 데이터 정의 (6가지 미션 순서 - 2행 3열 배치)
+         */
+        const MISSIONS = [
+            {
+                id: 'pencilcase',
+                title: '필통 챙기기',
+                subtitle: '깎은 연필 5자루, 지우개, 네임펜',
+                icon: '✏️',
+                subIcon: '🖍️',
+                color: 'bg-amber-100 text-amber-600',
+                voiceText: '필통 챙기기 완료! 참 잘했어요!'
+            },
+            {
+                id: 'waterbottle',
+                title: '물통 챙기기',
+                subtitle: '시원한 물을 가득 담아 가방에 쏙!',
+                icon: '💧',
+                subIcon: '🧴',
+                color: 'bg-sky-100 text-sky-600',
+                voiceText: '물통 챙기기 완료! 최고예요!'
+            },
+            {
+                id: 'breakfast',
+                title: '아침 밥 먹기',
+                subtitle: '꼭꼭 씹어서 튼튼하게 다 먹어요',
+                icon: '🍚',
+                subIcon: '🥄',
+                color: 'bg-orange-100 text-orange-600',
+                voiceText: '아침 밥 먹기 완료! 힘이 불끈 솟아요!'
+            },
+            {
+                id: 'brush',
+                title: '양치 세수하기',
+                subtitle: '치카치카 깨끗이 닦고 반짝반짝 세수해요',
+                icon: '🪥',
+                subIcon: '🫧',
+                color: 'bg-teal-100 text-teal-600',
+                voiceText: '양치 세수하기 완료! 정말 깨끗해요!'
+            },
+            {
+                id: 'dress',
+                title: '옷 입기',
+                subtitle: '오늘 날씨에 맞는 예쁜 옷을 혼자 입어요',
+                icon: '👕',
+                subIcon: '👖',
+                color: 'bg-indigo-100 text-indigo-600',
+                voiceText: '옷 입기 완료! 정말 멋져요!'
+            },
+            {
+                id: 'afterschool',
+                title: '방과후 준비물 챙기기',
+                subtitle: '오늘 방과후 수업에 필요한 준비물을 챙겨요',
+                icon: '🎨',
+                subIcon: '🛍️',
+                color: 'bg-purple-100 text-purple-600',
+                voiceText: '방과후 준비물 챙기기 완료! 꼼꼼하게 잘 챙겼어요!'
+            }
+        ];
+
+        /**
+         * 2. 날씨 및 기온별 옷차림 데이터 & 곰/토끼 캐릭터 렌더링 로직
+         */
+        const WEATHER_PRESETS = [
+            {
+                id: 'freezing',
+                label: '추운 겨울',
+                tempRange: '4°C 이하',
+                sampleTemp: 1,
+                icon: '🥶',
+                conditionText: '매우 추운 날씨',
+                headline: '두꺼운 패딩과 목도리, 장갑을 꼭 챙겨요!',
+                description: '바람이 아주 차가워요! 따뜻한 롱패딩이나 두꺼운 패딩 점퍼를 입고 목도리랑 장갑까지 꽁꽁 싸매야 감기에 걸리지 않아요.',
+                tags: ['🧥 두꺼운 패딩', '🧣 목도리', '🧤 방한 장갑', '👖 기모 바지'],
+                outfitType: 'winter_heavy',
+                isRainy: false
+            },
+            {
+                id: 'chilly',
+                label: '쌀쌀함',
+                tempRange: '5~11°C',
+                sampleTemp: 8,
+                icon: '🧥',
+                conditionText: '쌀쌀한 날씨',
+                headline: '경량 패딩이나 따뜻한 니트·자켓을 입어요!',
+                description: '아침 등굣길이 꽤 쌀쌀해요. 포근한 니트나 후드티 위에 경량 패딩이나 자켓을 꼭 걸쳐 입어요.',
+                tags: ['🧥 경량 패딩·자켓', '🧶 포근한 니트', '👖 긴바지'],
+                outfitType: 'winter_light',
+                isRainy: false
+            },
+            {
+                id: 'cool',
+                label: '선선함',
+                tempRange: '12~19°C',
+                sampleTemp: 15,
+                icon: '🌤️',
+                conditionText: '선선한 날씨',
+                headline: '포근한 가디건이나 맨투맨을 입어요!',
+                description: '아침 공기가 조금 선선해요. 예쁜 맨투맨이나 긴팔 티셔츠 위에 가디건을 걸치면 학교 갈 때 딱 좋아요!',
+                tags: ['🧥 가디건', '👕 맨투맨·긴팔', '👖 면바지·청바지'],
+                outfitType: 'spring_cardigan',
+                isRainy: false
+            },
+            {
+                id: 'mild',
+                label: '포근함',
+                tempRange: '20~24°C',
+                sampleTemp: 22,
+                icon: '☀️',
+                conditionText: '포근하고 맑음',
+                headline: '가벼운 긴팔 티셔츠나 얇은 셔츠가 좋아요!',
+                description: '활동하기 딱 좋은 포근한 날씨예요! 얇은 긴팔 티셔츠나 셔츠에 편한 긴바지를 입으면 뛰어놀기 좋아요.',
+                tags: ['👕 얇은 긴팔티', '👔 산뜻한 셔츠', '👖 편한 긴바지'],
+                outfitType: 'mild_longsleeve',
+                isRainy: false
+            },
+            {
+                id: 'hot',
+                label: '더운 여름',
+                tempRange: '25°C 이상',
+                sampleTemp: 28,
+                icon: '🌞',
+                conditionText: '더운 날씨',
+                headline: '시원한 반팔 티셔츠와 반바지를 입어요!',
+                description: '햇볕이 쨍쨍하고 더워요! 바람이 잘 통하는 시원한 반팔 티셔츠와 반바지(또는 치마)를 입고 모자도 챙겨요.',
+                tags: ['👕 시원한 반팔', '🩳 반바지·치마', '🧢 햇빛 모자'],
+                outfitType: 'summer_short',
+                isRainy: false
+            },
+            {
+                id: 'rainy',
+                label: '비·눈 오는 날',
+                tempRange: '우산 필수',
+                sampleTemp: 14,
+                icon: '☔',
+                conditionText: '비 오는 날씨',
+                headline: '노란 우비와 장화를 신고 우산을 챙겨요!',
+                description: '하늘에서 비가 내려요! 옷이 젖지 않게 예쁜 우비와 빗물 막아주는 장화를 신고 우산도 꼭 챙겨서 조심히 걸어가요.',
+                tags: ['🧥 방수 우비', '👢 레인부츠(장화)', '☂️ 튼튼한 우산'],
+                outfitType: 'rainy_gear',
+                isRainy: true
+            }
+        ];
+
+        // 앱 상태 변수
+        let completedIds = [];
+        let soundEnabled = true;
+        let currentCharacter = 'bear'; // 'bear' | 'rabbit'
+        let currentWeatherState = {
+            presetId: 'cool',
+            temp: 15,
+            locationName: '서울 (기본)',
+            isLive: false,
+            conditionLabel: '선선한 날씨'
+        };
+
+        // 오늘 날짜 문자열 (저장 키용 YYYY-MM-DD)
+        function getTodayKey() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `morning_mission_${y}-${m}-${d}`;
+        }
+
+        // 화면 상단 한국어 날짜 표시
+        function renderTodayDate() {
+            const now = new Date();
+            const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            const dateStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${days[now.getDay()]}`;
+            const el = document.getElementById('today-date');
+            if (el) el.textContent = dateStr;
+        }
+
+        // 로컬 스토리지에서 오늘 진행 상황 불러오기
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem(getTodayKey());
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        const validIds = MISSIONS.map(m => m.id);
+                        completedIds = parsed.filter(id => validIds.includes(id));
+                    }
+                }
+                const savedCharacter = localStorage.getItem('morning_mission_character');
+                if (savedCharacter === 'bear' || savedCharacter === 'rabbit') {
+                    currentCharacter = savedCharacter;
+                }
+                const savedSound = localStorage.getItem('morning_mission_sound');
+                if (savedSound !== null) {
+                    soundEnabled = savedSound === 'true';
+                }
+            } catch (e) {
+                console.warn('저장 데이터 불러오기 실패:', e);
+            }
+        }
+
+        // 로컬 스토리지에 진행 상황 저장
+        function saveProgress() {
+            try {
+                localStorage.setItem(getTodayKey(), JSON.stringify(completedIds));
+            } catch (e) {
+                console.warn('저장 실패:', e);
+            }
+        }
+
+        /**
+         * 3. 효과음 (Web Audio API) & 한국어 음성 안내 (SpeechSynthesis)
+         */
+        let audioCtx = null;
+
+        function playTone(freqs, durations, type = 'sine', volume = 0.25) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                let startTime = audioCtx.currentTime;
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, startTime);
+
+                    gain.gain.setValueAtTime(volume, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + durations[idx]);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + durations[idx]);
+                    startTime += durations[idx] * 0.85;
+                });
+            } catch (e) {
+                console.warn('오디오 재생 오류:', e);
+            }
+        }
+
+        function playSuccessSound() {
+            playTone([523.25, 659.25, 783.99, 1046.5], [0.12, 0.12, 0.12, 0.3], 'triangle', 0.28);
+        }
+
+        function playCancelSound() {
+            playTone([440, 349.23], [0.1, 0.15], 'sine', 0.18);
+        }
+
+        function playFanfareSound() {
+            playTone([523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5], [0.13, 0.13, 0.13, 0.22, 0.13, 0.45], 'triangle', 0.32);
+        }
+
+        function speakKorean(text) {
+            if (!soundEnabled) return;
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(text);
+                    utter.lang = 'ko-KR';
+                    utter.rate = 1.02;
+                    utter.pitch = 1.18;
+                    window.speechSynthesis.speak(utter);
+                }
+            } catch (e) {
+                console.warn('음성 합성 오류:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            try {
+                localStorage.setItem('morning_mission_sound', String(soundEnabled));
+            } catch (e) {}
+            updateSoundUI();
+            if (soundEnabled) {
+                playSuccessSound();
+            } else if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function updateSoundUI() {
+            const icon = document.getElementById('sound-icon');
+            const label = document.getElementById('sound-label');
+            const btn = document.getElementById('sound-toggle-btn');
+            if (!icon || !label || !btn) return;
+
+            if (soundEnabled) {
+                icon.textContent = '🔊';
+                label.textContent = '소리 켜짐';
+                btn.classList.remove('opacity-60');
+            } else {
+                icon.textContent = '🔇';
+                label.textContent = '소리 꺼짐';
+                btn.classList.add('opacity-60');
+            }
+        }
+
+        /**
+         * 4. 동화책 일러스트풍 정교한 곰 & 토끼 캐릭터 + 입체 의상 SVG 렌더링
+         */
+        function renderCharacterSVG(outfitType, characterType) {
+            const isBear = characterType === 'bear';
+
+            const defsSVG = `
+                <defs>
+                    <filter id="softShadow" x="-18%" y="-18%" width="136%" height="136%">
+                        <feDropShadow dx="0" dy="3.5" stdDeviation="2.5" flood-color="#334155" flood-opacity="0.18"/>
+                    </filter>
+                    <filter id="paperGrain" x="0%" y="0%" width="100%" height="100%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" result="noise"/>
+                        <feColorMatrix type="matrix" values="1 0 0 0 0.98  0 1 0 0 0.95  0 0 1 0 0.9  0 0 0 0.045 0" in="noise" result="coloredNoise"/>
+                        <feComposite operator="in" in2="SourceGraphic"/>
+                    </filter>
+                    <radialGradient id="bearFurGrad" cx="38%" cy="30%" r="70%">
+                        <stop offset="0%" stop-color="#FBBF24"/>
+                        <stop offset="48%" stop-color="#D97706"/>
+                        <stop offset="100%" stop-color="#854D0E"/>
+                    </radialGradient>
+                    <radialGradient id="bearMuzzleGrad" cx="45%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#FFFBEB"/>
+                        <stop offset="100%" stop-color="#FDE68A"/>
+                    </radialGradient>
+                    <radialGradient id="rabbitFurGrad" cx="36%" cy="28%" r="72%">
+                        <stop offset="0%" stop-color="#FFFFFF"/>
+                        <stop offset="58%" stop-color="#FFF1F5"/>
+                        <stop offset="100%" stop-color="#FBCFE8"/>
+                    </radialGradient>
+                    <linearGradient id="rabbitEarInner" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FDA4AF"/>
+                        <stop offset="100%" stop-color="#F472B6"/>
+                    </linearGradient>
+                    <linearGradient id="backpackStrapGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FDE047"/>
+                        <stop offset="100%" stop-color="#EAB308"/>
+                    </linearGradient>
+                    <linearGradient id="skyDayGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.85"/>
+                        <stop offset="68%" stop-color="#FEF9C3" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#DCFCE7" stop-opacity="0.55"/>
+                    </linearGradient>
+                    <linearGradient id="skyWinterGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.85"/>
+                        <stop offset="70%" stop-color="#F8FAFC" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#E2E8F0" stop-opacity="0.8"/>
+                    </linearGradient>
+                    <linearGradient id="skyRainGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#CBD5E1" stop-opacity="0.75"/>
+                        <stop offset="70%" stop-color="#E0F2FE" stop-opacity="0.5"/>
+                        <stop offset="100%" stop-color="#BAE6FD" stop-opacity="0.55"/>
+                    </linearGradient>
+                </defs>
+            `;
+
+            // 동화책 배경 풍경
+            let bgWeatherElements = '';
+            if (outfitType === 'winter_heavy') {
+                bgWeatherElements = `
+                    <rect x="0" y="0" width="240" height="250" fill="url(#skyWinterGrad)"/>
+                    <g fill="#FFFFFF" opacity="0.95">
+                        <circle cx="34" cy="36" r="4"/><circle cx="204" cy="44" r="4.5"/>
+                        <circle cx="54" cy="104" r="3"/><circle cx="194" cy="116" r="3.8"/>
+                        <circle cx="26" cy="158" r="2.8"/><circle cx="212" cy="166" r="3.2"/>
+                        <path d="M182 24 L182 38 M175 31 L189 31 M177 26 L187 36 M187 26 L177 36" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M42 66 L42 78 M36 72 L48 72 M38 68 L46 76 M46 68 L38 76" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+                    </g>
+                    <path d="M0 225 Q65 214 125 224 Q185 215 240 225 L240 250 L0 250 Z" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+                    <ellipse cx="120" cy="233" rx="50" ry="7.5" fill="#94A3B8" opacity="0.35"/>
+                `;
+            } else if (outfitType === 'rainy_gear') {
+                bgWeatherElements = `
+                    <rect x="0" y="0" width="240" height="250" fill="url(#skyRainGrad)"/>
+                    <!-- 동화풍 비구름 -->
+                    <g fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" opacity="0.92">
+                        <circle cx="38" cy="34" r="12"/><circle cx="52" cy="30" r="15"/><circle cx="68" cy="34" r="12"/><circle cx="80" cy="37" r="9"/>
+                        <rect x="38" y="34" width="42" height="12" rx="6" stroke="none"/>
+                    </g>
+                    <g stroke="#38BDF8" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
+                        <path d="M42 54 L36 68"/><path d="M58 52 L52 66"/><path d="M74 55 L68 69"/>
+                        <path d="M32 115 L26 129"/><path d="M48 158 L42 172"/><path d="M208 130 L202 144"/>
+                    </g>
+                    <path d="M0 227 Q120 218 240 227 L240 250 L0 250 Z" fill="#E0F2FE"/>
+                    <ellipse cx="120" cy="234" rx="76" ry="10.5" fill="#7DD3FC" opacity="0.6"/>
+                    <ellipse cx="120" cy="234" rx="52" ry="6" fill="none" stroke="#38BDF8" stroke-width="1.6"/>
+                    <ellipse cx="120" cy="233" rx="45" ry="6" fill="#0369A1" opacity="0.22"/>
+                `;
+            } else if (outfitType === 'summer_short') {
+                bgWeatherElements = `
+                    <rect x="0" y="0" width="240" height="250" fill="url(#skyDayGrad)"/>
+                    <g transform="translate(196, 38)">
+                        <circle cx="0" cy="0" r="25" fill="#FDE047" opacity="0.45"/>
+                        <circle cx="0" cy="0" r="16" fill="#FACC15" stroke="#EAB308" stroke-width="1.5"/>
+                        <g stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round">
+                            <line x1="0" y1="-23" x2="0" y2="-19"/><line x1="0" y1="19" x2="0" y2="23"/>
+                            <line x1="-23" y1="0" x2="-19" y2="0"/><line x1="19" y1="0" x2="23" y2="0"/>
+                            <line x1="-16" y1="-16" x2="-13" y2="-13"/><line x1="13" y1="13" x2="16" y2="16"/>
+                            <line x1="16" y1="-16" x2="13" y2="-13"/><line x1="-13" y1="13" x2="-16" y2="16"/>
+                        </g>
+                    </g>
+                    <path d="M0 227 Q70 217 120 225 Q175 216 240 227 L240 250 L0 250 Z" fill="#BBF7D0"/>
+                    <g transform="translate(38, 224)">
+                        <circle cx="0" cy="-4" r="3.2" fill="#FDA4AF"/><circle cx="4" cy="0" r="3.2" fill="#FDA4AF"/>
+                        <circle cx="0" cy="4" r="3.2" fill="#FDA4AF"/><circle cx="-4" cy="0" r="3.2" fill="#FDA4AF"/>
+                        <circle cx="0" cy="0" r="2.2" fill="#FDE047"/>
+                    </g>
+                    <g transform="translate(202, 222)">
+                        <circle cx="0" cy="-3.5" r="3" fill="#93C5FD"/><circle cx="3.5" cy="0" r="3" fill="#93C5FD"/>
+                        <circle cx="0" cy="3.5" r="3" fill="#93C5FD"/><circle cx="-3.5" cy="0" r="3" fill="#93C5FD"/>
+                        <circle cx="0" cy="0" r="2" fill="#FDE047"/>
+                    </g>
+                    <ellipse cx="120" cy="234" rx="46" ry="6.5" fill="#15803D" opacity="0.22"/>
+                `;
+            } else {
+                bgWeatherElements = `
+                    <rect x="0" y="0" width="240" height="250" fill="url(#skyDayGrad)"/>
+                    <g fill="#FFFFFF" stroke="#E0F2FE" stroke-width="1.2" opacity="0.95">
+                        <circle cx="38" cy="36" r="11"/><circle cx="52" cy="33" r="14.5"/><circle cx="68" cy="36" r="11"/>
+                        <rect x="38" y="34" width="30" height="13" rx="6" stroke="none"/>
+                    </g>
+                    <g fill="#FFFFFF" stroke="#E0F2FE" stroke-width="1.2" opacity="0.9">
+                        <circle cx="182" cy="48" r="9"/><circle cx="195" cy="45" r="12"/><circle cx="208" cy="48" r="8.5"/>
+                        <rect x="182" y="46" width="26" height="10" rx="5" stroke="none"/>
+                    </g>
+                    <path d="M0 227 Q70 217 120 225 Q175 216 240 227 L240 250 L0 250 Z" fill="#BBF7D0"/>
+                    <g transform="translate(42, 225)">
+                        <circle cx="0" cy="-3.2" r="2.8" fill="#F9A8D4"/><circle cx="3.2" cy="0" r="2.8" fill="#F9A8D4"/>
+                        <circle cx="0" cy="3.2" r="2.8" fill="#F9A8D4"/><circle cx="-3.2" cy="0" r="2.8" fill="#F9A8D4"/>
+                        <circle cx="0" cy="0" r="1.9" fill="#FACC15"/>
+                    </g>
+                    <g transform="translate(198, 223)">
+                        <circle cx="0" cy="-3.2" r="2.8" fill="#C4B5FD"/><circle cx="3.2" cy="0" r="2.8" fill="#C4B5FD"/>
+                        <circle cx="0" cy="3.2" r="2.8" fill="#C4B5FD"/><circle cx="-3.2" cy="0" r="2.8" fill="#C4B5FD"/>
+                        <circle cx="0" cy="0" r="1.9" fill="#FACC15"/>
+                    </g>
+                    <ellipse cx="120" cy="234" rx="46" ry="6.5" fill="#15803D" opacity="0.22"/>
+                `;
+            }
+
+            const furFill = isBear ? 'url(#bearFurGrad)' : 'url(#rabbitFurGrad)';
+            const furStroke = isBear ? '#78350F' : '#DB2777';
+
+            // 등 뒤 노란 초등 책가방 & 꼬리
+            const backpackAndTailSVG = `
+                <rect x="81" y="109" width="78" height="58" rx="18" fill="#F59E0B" stroke="#B45309" stroke-width="2.2"/>
+                <rect x="87" y="115" width="66" height="14" rx="7" fill="#FDE047" opacity="0.55"/>
+                ${isBear
+                    ? `<circle cx="158" cy="171" r="11" fill="url(#bearFurGrad)" stroke="#78350F" stroke-width="2.2"/>
+                       <circle cx="160" cy="169" r="4" fill="#FDE68A" opacity="0.55"/>`
+                    : `<g>
+                         <circle cx="159" cy="170" r="11.5" fill="#FFFFFF" stroke="#DB2777" stroke-width="2.2"/>
+                         <circle cx="165" cy="165" r="7.5" fill="#FFFFFF" stroke="#DB2777" stroke-width="2"/>
+                         <circle cx="155" cy="175" r="7" fill="#FFF1F5" stroke="#DB2777" stroke-width="1.8"/>
+                         <circle cx="160" cy="169" r="4" fill="#FCE7F3"/>
+                       </g>`
+                }
+            `;
+
+            // 초1 노란 안전 책가방 어깨끈
+            const backpackStrapsSVG = `
+                <path d="M95 107 C91 128, 91 148, 96 164" fill="none" stroke="url(#backpackStrapGrad)" stroke-width="6.8" stroke-linecap="round"/>
+                <path d="M95 107 C91 128, 91 148, 96 164" fill="none" stroke="#CA8A04" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M145 107 C149 128, 149 148, 144 164" fill="none" stroke="url(#backpackStrapGrad)" stroke-width="6.8" stroke-linecap="round"/>
+                <path d="M145 107 C149 128, 149 148, 144 164" fill="none" stroke="#CA8A04" stroke-width="1.3" stroke-linecap="round"/>
+                <line x1="94" y1="136" x2="146" y2="136" stroke="#EAB308" stroke-width="3.6"/>
+                <rect x="115" y="132" width="10" height="8" rx="2.5" fill="#334155" stroke="#0F172A" stroke-width="1.2"/>
+            `;
+
+            // 6가지 날씨별 일러스트풍 의상 렌더링
+            let clothesSVG = '';
+            let hatOrAccessorySVG = '';
+
+            if (outfitType === 'winter_heavy') {
+                const coatMain = isBear ? '#2563EB' : '#F43F5E';
+                const coatDark = isBear ? '#1E3A8A' : '#9F1239';
+                const coatLight = isBear ? '#93C5FD' : '#FECDD3';
+                clothesSVG = `
+                    <!-- 기모 바지 & 입체 접힘 선 -->
+                    <rect x="96" y="172" width="19" height="44" rx="8.5" fill="#1E293B" stroke="#0F172A" stroke-width="2.2"/>
+                    <rect x="125" y="172" width="19" height="44" rx="8.5" fill="#1E293B" stroke="#0F172A" stroke-width="2.2"/>
+                    <path d="M100 192 Q105.5 195 111 192 M129 192 Q134.5 195 140 192" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+                    <!-- 털 부츠 & 양털 커프스 -->
+                    <rect x="90" y="210" width="27" height="17" rx="8.5" fill="#78350F" stroke="#451A03" stroke-width="2.2"/>
+                    <rect x="123" y="210" width="27" height="17" rx="8.5" fill="#78350F" stroke="#451A03" stroke-width="2.2"/>
+                    <rect x="91" y="207" width="25" height="6.5" rx="3.2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+                    <rect x="124" y="207" width="25" height="6.5" rx="3.2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+
+                    <!-- 볼륨감 있는 롱패딩 몸통 -->
+                    <rect x="82" y="106" width="76" height="76" rx="24" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.5" filter="url(#softShadow)"/>
+                    <!-- 패딩 퀼팅 봉제선 & 하이라이트 -->
+                    <path d="M84 128 Q120 133 156 128" fill="none" stroke="${coatDark}" stroke-width="2.6"/>
+                    <path d="M84 150 Q120 155 156 150" fill="none" stroke="${coatDark}" stroke-width="2.6"/>
+                    <path d="M90 116 L90 168" stroke="${coatLight}" stroke-width="3.2" stroke-linecap="round" opacity="0.6"/>
+                    <path d="M149 116 L149 168" stroke="${coatLight}" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+                    <!-- 지퍼 플랩 & 플랩 포켓 -->
+                    <line x1="120" y1="108" x2="120" y2="180" stroke="#F8FAFC" stroke-width="2.4" stroke-dasharray="4 2.5"/>
+                    <path d="M91 155 L109 155 L109 172 Q100 175 91 172 Z" fill="${coatDark}" opacity="0.42" stroke="${coatDark}" stroke-width="1.2"/>
+                    <path d="M131 155 L149 155 L149 172 Q140 175 131 172 Z" fill="${coatDark}" opacity="0.42" stroke="${coatDark}" stroke-width="1.2"/>
+
+                    <!-- 패딩 소매 & 벙어리 장갑 -->
+                    <rect x="61" y="112" width="23" height="51" rx="11.5" transform="rotate(14 75 117)" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.2"/>
+                    <rect x="156" y="112" width="23" height="51" rx="11.5" transform="rotate(-14 165 117)" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.2"/>
+                    <path d="M65 134 L81 138 M159 138 L175 134" stroke="${coatDark}" stroke-width="2.2"/>
+                    <rect x="56" y="156" width="18" height="20" rx="9" transform="rotate(14 65 166)" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
+                    <rect x="166" y="156" width="18" height="20" rx="9" transform="rotate(-14 175 166)" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
+
+                    <!-- 체크 목도리 & 술 장식 -->
+                    <rect x="88" y="99" width="64" height="18" rx="9" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/>
+                    <line x1="103" y1="100" x2="103" y2="116" stroke="#EF4444" stroke-width="2.4"/>
+                    <line x1="120" y1="100" x2="120" y2="116" stroke="#EF4444" stroke-width="2.4"/>
+                    <line x1="137" y1="100" x2="137" y2="116" stroke="#EF4444" stroke-width="2.4"/>
+                    <rect x="130" y="112" width="17" height="36" rx="7" fill="#FACC15" stroke="#CA8A04" stroke-width="2"/>
+                    <line x1="134" y1="148" x2="134" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="138.5" y1="148" x2="138.5" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="143" y1="148" x2="143" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+                `;
+                hatOrAccessorySVG = `
+                    <!-- 방울 니트 모자 -->
+                    <path d="M89 55 C93 35, 147 35, 151 55 Z" fill="${isBear ? '#3B82F6' : '#FB7185'}" stroke="${coatDark}" stroke-width="2.2"/>
+                    <path d="M106 39 Q104 47 106 52 M120 38 L120 52 M134 39 Q136 47 134 52" fill="none" stroke="${coatDark}" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
+                    <rect x="87" y="50" width="66" height="10" rx="5" fill="#FEF08A" stroke="#CA8A04" stroke-width="1.8"/>
+                    <circle cx="120" cy="33" r="9.5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.8"/>
+                `;
+            } else if (outfitType === 'winter_light') {
+                const jacketMain = isBear ? '#0EA5E9' : '#C084FC';
+                const jacketDark = isBear ? '#0369A1' : '#7E22CE';
+                const jacketLight = isBear ? '#7DD3FC' : '#E9D5FF';
+                clothesSVG = `
+                    <!-- 바지 & 운동화 -->
+                    <rect x="97" y="170" width="18" height="46" rx="8" fill="#334155" stroke="#1E293B" stroke-width="2.2"/>
+                    <rect x="125" y="170" width="18" height="46" rx="8" fill="#334155" stroke="#1E293B" stroke-width="2.2"/>
+                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
+                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
+                    <path d="M96 218 L112 218 M128 218 L144 218" stroke="${jacketMain}" stroke-width="3" stroke-linecap="round"/>
+
+                    <!-- 케이블 니트 이너 -->
+                    <rect x="89" y="107" width="62" height="67" rx="16" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+                    <path d="M114 114 L114 166 M126 114 L126 166" stroke="#F59E0B" stroke-width="2.4" stroke-dasharray="5 3" opacity="0.75"/>
+
+                    <!-- 경량 패딩 자켓 & 퀼팅 디테일 -->
+                    <path d="M85 107 L110 107 L110 174 L85 174 Q82 140 85 107 Z" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2.2"/>
+                    <path d="M130 107 L155 107 Q158 140 155 174 L130 174 Z" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2.2"/>
+                    <line x1="85" y1="129" x2="110" y2="129" stroke="${jacketDark}" stroke-width="1.8"/>
+                    <line x1="85" y1="151" x2="110" y2="151" stroke="${jacketDark}" stroke-width="1.8"/>
+                    <line x1="130" y1="129" x2="155" y2="129" stroke="${jacketDark}" stroke-width="1.8"/>
+                    <line x1="130" y1="151" x2="155" y2="151" stroke="${jacketDark}" stroke-width="1.8"/>
+                    <path d="M89 112 L89 168" stroke="${jacketLight}" stroke-width="2.4" stroke-linecap="round" opacity="0.6"/>
+                    <circle cx="105" cy="120" r="2.2" fill="#FFFFFF"/>
+                    <circle cx="105" cy="140" r="2.2" fill="#FFFFFF"/>
+                    <circle cx="105" cy="160" r="2.2" fill="#FFFFFF"/>
+
+                    <!-- 소매 & 손 -->
+                    <rect x="66" y="111" width="20" height="49" rx="10" transform="rotate(12 75 114)" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2"/>
+                    <rect x="154" y="111" width="20" height="49" rx="10" transform="rotate(-12 165 114)" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2"/>
+                    <circle cx="68" cy="163" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    <circle cx="172" cy="163" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    ${backpackStrapsSVG}
+                `;
+            } else if (outfitType === 'spring_cardigan') {
+                const cardiMain = isBear ? '#10B981' : '#FB923C';
+                const cardiDark = isBear ? '#047857' : '#C2410C';
+                const cardiLight = isBear ? '#6EE7B7' : '#FED7AA';
+                clothesSVG = `
+                    ${!isBear
+                        ? `<!-- 플리츠 스커트 & 레이스 양말 -->
+                           <path d="M91 162 L149 162 L159 193 L81 193 Z" fill="#60A5FA" stroke="#1D4ED8" stroke-width="2.2"/>
+                           <line x1="104" y1="163" x2="99" y2="192" stroke="#1D4ED8" stroke-width="2"/>
+                           <line x1="120" y1="163" x2="120" y2="192" stroke="#1D4ED8" stroke-width="2"/>
+                           <line x1="136" y1="163" x2="141" y2="192" stroke="#1D4ED8" stroke-width="2"/>
+                           <rect x="99" y="192" width="14" height="24" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.8"/>
+                           <rect x="127" y="192" width="14" height="24" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.8"/>`
+                        : `<!-- 데님 팬츠 -->
+                           <rect x="97" y="168" width="18" height="48" rx="8" fill="#1E3A8A" stroke="#172554" stroke-width="2.2"/>
+                           <rect x="125" y="168" width="18" height="48" rx="8" fill="#1E3A8A" stroke="#172554" stroke-width="2.2"/>
+                           <line x1="106" y1="172" x2="106" y2="212" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 3"/>
+                           <line x1="134" y1="172" x2="134" y2="212" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 3"/>`
+                    }
+                    <!-- 스니커즈 -->
+                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#F43F5E" stroke="#BE123C" stroke-width="2"/>
+                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#F43F5E" stroke="#BE123C" stroke-width="2"/>
+                    <rect x="92" y="221" width="24" height="4" rx="2" fill="#FFFFFF"/>
+                    <rect x="124" y="221" width="24" height="4" rx="2" fill="#FFFFFF"/>
+
+                    <!-- 이너 티셔츠 & 별 프린트 -->
+                    <rect x="91" y="107" width="58" height="61" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                    <polygon points="120,124 123,131 131,132 125,137 127,145 120,141 113,145 115,137 109,132 117,131" fill="#FBBF24" stroke="#D97706" stroke-width="1.2"/>
+
+                    <!-- 포근한 니트 가디건 -->
+                    <path d="M86 107 L111 107 L111 168 L86 168 Q83 138 86 107 Z" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2.2"/>
+                    <path d="M129 107 L154 107 Q157 138 154 168 L129 168 Z" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2.2"/>
+                    <path d="M90 113 L90 162 M150 113 L150 162" stroke="${cardiLight}" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+                    <rect x="67" y="111" width="19" height="47" rx="9.5" transform="rotate(12 75 114)" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2"/>
+                    <rect x="154" y="111" width="19" height="47" rx="9.5" transform="rotate(-12 165 114)" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2"/>
+                    <circle cx="69" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    <circle cx="171" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    ${backpackStrapsSVG}
+                `;
+            } else if (outfitType === 'mild_longsleeve') {
+                const shirtMain = isBear ? '#38BDF8' : '#F472B6';
+                const shirtDark = isBear ? '#0369A1' : '#BE185D';
+                clothesSVG = `
+                    <!-- 치노 팬츠 -->
+                    <rect x="97" y="168" width="18" height="48" rx="8" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.2"/>
+                    <rect x="125" y="168" width="18" height="48" rx="8" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.2"/>
+                    <!-- 노란 단화 -->
+                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
+                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
+
+                    <!-- 세일러 카라 스트라이프 긴팔 -->
+                    <rect x="88" y="107" width="64" height="63" rx="16" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2.2"/>
+                    <line x1="89" y1="127" x2="151" y2="127" stroke="#FFFFFF" stroke-width="4.5"/>
+                    <line x1="89" y1="145" x2="151" y2="145" stroke="#FFFFFF" stroke-width="4.5"/>
+                    <path d="M104 107 Q112 119 120 112 Q128 119 136 107 Z" fill="#FFFFFF" stroke="${shirtDark}" stroke-width="1.8"/>
+
+                    <rect x="67" y="111" width="19" height="47" rx="9.5" transform="rotate(12 75 114)" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2"/>
+                    <rect x="154" y="111" width="19" height="47" rx="9.5" transform="rotate(-12 165 114)" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2"/>
+                    <circle cx="69" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    <circle cx="171" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    ${backpackStrapsSVG}
+                `;
+            } else if (outfitType === 'summer_short') {
+                const teeMain = isBear ? '#34D399' : '#FDE047';
+                const teeDark = isBear ? '#047857' : '#A16207';
+                clothesSVG = `
+                    <!-- 반바지 & 다리 -->
+                    <rect x="95" y="164" width="21" height="24" rx="6" fill="#0284C7" stroke="#0369A1" stroke-width="2.2"/>
+                    <rect x="124" y="164" width="21" height="24" rx="6" fill="#0284C7" stroke="#0369A1" stroke-width="2.2"/>
+                    <line x1="105.5" y1="166" x2="105.5" y2="186" stroke="#38BDF8" stroke-width="1.6"/>
+                    <line x1="134.5" y1="166" x2="134.5" y2="186" stroke="#38BDF8" stroke-width="1.6"/>
+                    <rect x="99" y="187" width="14" height="27" rx="6" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    <rect x="127" y="187" width="14" height="27" rx="6" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    <!-- 여름 샌들 -->
+                    <rect x="91" y="212" width="26" height="13" rx="6.5" fill="#FB7185" stroke="#BE123C" stroke-width="2"/>
+                    <rect x="123" y="212" width="26" height="13" rx="6.5" fill="#FB7185" stroke="#BE123C" stroke-width="2"/>
+
+                    <!-- 반팔 티셔츠 -->
+                    <rect x="88" y="107" width="64" height="61" rx="16" fill="${teeMain}" stroke="${teeDark}" stroke-width="2.2"/>
+                    <circle cx="120" cy="139" r="14.5" fill="#FFFFFF" stroke="${teeDark}" stroke-width="1.2" opacity="0.8"/>
+                    <text x="120" y="146.5" text-anchor="middle" font-size="21">${isBear ? '🍯' : '🥕'}</text>
+
+                    <rect x="69" y="110" width="19" height="22" rx="8" transform="rotate(14 76 114)" fill="${teeMain}" stroke="${teeDark}" stroke-width="2"/>
+                    <rect x="152" y="110" width="19" height="22" rx="8" transform="rotate(-14 164 114)" fill="${teeMain}" stroke="${teeDark}" stroke-width="2"/>
+                    <rect x="67" y="129" width="14" height="31" rx="7" transform="rotate(14 75 132)" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    <rect x="159" y="129" width="14" height="31" rx="7" transform="rotate(-14 165 132)" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    ${backpackStrapsSVG}
+                `;
+                hatOrAccessorySVG = `
+                    <!-- 밀짚 햇빛 모자 & 리본띠 -->
+                    <ellipse cx="120" cy="53" rx="35" ry="6.5" fill="#F59E0B" stroke="#92400E" stroke-width="2"/>
+                    <path d="M97 53 C97 37, 143 37, 143 53 Z" fill="#FBBF24" stroke="#92400E" stroke-width="2"/>
+                    <path d="M107 41 L109 51 M120 39 L120 51 M133 41 L131 51" stroke="#D97706" stroke-width="1.4" opacity="0.7"/>
+                    <rect x="98" y="47" width="44" height="4.5" rx="2" fill="#EF4444"/>
+                `;
+            } else {
+                clothesSVG = `
+                    <!-- 레인부츠 -->
+                    <rect x="97" y="172" width="18" height="26" rx="7" fill="#334155"/>
+                    <rect x="125" y="172" width="18" height="26" rx="7" fill="#334155"/>
+                    <rect x="92" y="193" width="25" height="32" rx="9" fill="#F97316" stroke="#9A3412" stroke-width="2.2"/>
+                    <rect x="123" y="193" width="25" height="32" rx="9" fill="#F97316" stroke="#9A3412" stroke-width="2.2"/>
+                    <rect x="93" y="193" width="23" height="5" rx="2.5" fill="#FDBA74"/>
+                    <rect x="124" y="193" width="23" height="5" rx="2.5" fill="#FDBA74"/>
+
+                    <!-- 노란 방수 우비 -->
+                    <path d="M83 107 L157 107 L166 181 L74 181 Z" fill="#FACC15" stroke="#A16207" stroke-width="2.4" filter="url(#softShadow)"/>
+                    <path d="M92 114 L84 174" stroke="#FEF08A" stroke-width="2.6" stroke-linecap="round" opacity="0.65"/>
+                    <line x1="120" y1="107" x2="120" y2="181" stroke="#A16207" stroke-width="2.4"/>
+                    <circle cx="113" cy="126" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
+                    <circle cx="113" cy="144" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
+                    <circle cx="113" cy="162" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
+
+                    <rect x="65" y="111" width="20" height="47" rx="10" transform="rotate(14 75 114)" fill="#FACC15" stroke="#A16207" stroke-width="2"/>
+                    <rect x="155" y="111" width="20" height="47" rx="10" transform="rotate(-14 165 114)" fill="#FACC15" stroke="#A16207" stroke-width="2"/>
+                    <circle cx="67" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+                    <circle cx="173" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
+
+                    <!-- 동화풍 하늘색 우산 -->
+                    <path d="M176 76 L176 166 C176 173, 168 173, 168 167" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M136 82 Q176 38 216 82 Q196 76 176 82 Q156 76 136 82 Z" fill="#38BDF8" stroke="#0369A1" stroke-width="2.2"/>
+                    <path d="M156 79 Q176 54 196 79" fill="none" stroke="#BAE6FD" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="176" y1="56" x2="176" y2="82" stroke="#E0F2FE" stroke-width="2"/>
+                `;
+                hatOrAccessorySVG = `
+                    <!-- 우비 후드 테두리 -->
+                    <path d="M81 71 C81 38, 159 38, 159 71" fill="none" stroke="#EAB308" stroke-width="10" stroke-linecap="round"/>
+                    <path d="M81 71 C81 38, 159 38, 159 71" fill="none" stroke="#FACC15" stroke-width="7.5" stroke-linecap="round"/>
+                    <path d="M84 67 C85 43, 155 43, 156 67" fill="none" stroke="#FEF9C3" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+                `;
+            }
+
+            // 동화책 일러스트풍 표정, 털 질감, 리본/볼터치가 살아 있는 곰 & 토끼 머리
+            const headSVG = isBear
+                ? `
+                    <!-- 목 -->
+                    <rect x="112" y="96" width="16" height="15" rx="6" fill="#B45309"/>
+                    <!-- 곰 귀 -->
+                    <circle cx="90" cy="51" r="14.5" fill="url(#bearFurGrad)" stroke="#78350F" stroke-width="2.4"/>
+                    <circle cx="90" cy="51" r="8.2" fill="#FDE68A" stroke="#F59E0B" stroke-width="1"/>
+                    <circle cx="150" cy="51" r="14.5" fill="url(#bearFurGrad)" stroke="#78350F" stroke-width="2.4"/>
+                    <circle cx="150" cy="51" r="8.2" fill="#FDE68A" stroke="#F59E0B" stroke-width="1"/>
+
+                    <!-- 아기 곰 얼굴 -->
+                    <ellipse cx="120" cy="77" rx="35.5" ry="29.5" fill="url(#bearFurGrad)" stroke="#78350F" stroke-width="2.4" filter="url(#softShadow)"/>
+                    <path d="M114 48 Q119 41 122 48 Q126 43 128 49" fill="none" stroke="#78350F" stroke-width="2.2" stroke-linecap="round"/>
+
+                    <!-- 반짝이는 눈망울 -->
+                    <path d="M101 63 Q106 60 111 63" fill="none" stroke="#78350F" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M129 63 Q134 60 139 63" fill="none" stroke="#78350F" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="106" cy="72" r="5.3" fill="#1E293B"/>
+                    <circle cx="134" cy="72" r="5.3" fill="#1E293B"/>
+                    <circle cx="107.8" cy="70" r="2.1" fill="#FFFFFF"/>
+                    <circle cx="135.8" cy="70" r="2.1" fill="#FFFFFF"/>
+                    <circle cx="104.5" cy="73.8" r="1" fill="#FFFFFF" opacity="0.85"/>
+                    <circle cx="132.5" cy="73.8" r="1" fill="#FFFFFF" opacity="0.85"/>
+
+                    <!-- 동화풍 수채화 볼터치 -->
+                    <ellipse cx="94" cy="81" rx="6.5" ry="3.6" fill="#FB7185" opacity="0.55"/>
+                    <ellipse cx="146" cy="81" rx="6.5" ry="3.6" fill="#FB7185" opacity="0.55"/>
+
+                    <!-- 입체 크림 주둥이 & 코 -->
+                    <ellipse cx="120" cy="85.5" rx="13.5" ry="11" fill="url(#bearMuzzleGrad)" stroke="#F59E0B" stroke-width="1.3"/>
+                    <ellipse cx="120" cy="81.2" rx="4.5" ry="3.2" fill="#451A03"/>
+                    <ellipse cx="118.8" cy="80.3" rx="1.4" ry="0.8" fill="#FFFFFF" opacity="0.75"/>
+                    <path d="M120 84.5 L120 88.5 M113.5 90 Q120 95 126.5 90" fill="none" stroke="#451A03" stroke-width="2.4" stroke-linecap="round"/>
+                  `
+                : `
+                    <!-- 목 -->
+                    <rect x="112" y="96" width="16" height="15" rx="6" fill="#FCE7F3"/>
+                    <!-- 동화책 일러스트풍 긴 토끼 귀 & 핑크 속귀 그라데이션 -->
+                    <g transform="rotate(-10 101 35)">
+                        <path d="M91 56 C87 26, 91 10, 101 10 C111 10, 114 26, 110 56 Z" fill="url(#rabbitFurGrad)" stroke="#DB2777" stroke-width="2.4"/>
+                        <path d="M95.5 51 C93 29, 95.5 17, 101 17 C106.5 17, 108.5 29, 106.5 51 Z" fill="url(#rabbitEarInner)"/>
+                        <path d="M94 22 C93 17, 96 14, 99 14" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+                    </g>
+                    <g transform="rotate(10 139 35)">
+                        <path d="M130 56 C126 26, 129 10, 139 10 C149 10, 153 26, 149 56 Z" fill="url(#rabbitFurGrad)" stroke="#DB2777" stroke-width="2.4"/>
+                        <path d="M133.5 51 C131.5 29, 133.5 17, 139 17 C144.5 17, 147 29, 144.5 51 Z" fill="url(#rabbitEarInner)"/>
+                        <path d="M133 22 C132 17, 135 14, 138 14" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+                    </g>
+
+                    <!-- 귀 밑 작은 핑크 리본 포인트 (모자/후드 없을 때) -->
+                    ${(outfitType !== 'winter_heavy' && outfitType !== 'summer_short' && outfitType !== 'rainy_gear')
+                        ? `<g transform="translate(138, 52)">
+                             <path d="M0 0 L-9 -5 L-9 5 Z" fill="#F472B6" stroke="#BE185D" stroke-width="1.4" stroke-linejoin="round"/>
+                             <path d="M0 0 L9 -5 L9 5 Z" fill="#F472B6" stroke="#BE185D" stroke-width="1.4" stroke-linejoin="round"/>
+                             <circle cx="0" cy="0" r="2.8" fill="#FDE047" stroke="#BE185D" stroke-width="1.2"/>
+                           </g>`
+                        : ''
+                    }
+
+                    <!-- 동화풍 복슬 토끼 얼굴 -->
+                    <ellipse cx="120" cy="77" rx="35" ry="29.5" fill="url(#rabbitFurGrad)" stroke="#DB2777" stroke-width="2.4" filter="url(#softShadow)"/>
+                    <!-- 머리 위 부드러운 광택 하이라이트 -->
+                    <ellipse cx="113" cy="56" rx="14" ry="4.5" fill="#FFFFFF" opacity="0.75"/>
+
+                    <!-- 눈썹 & 반짝이는 큰 눈 -->
+                    <path d="M101 65 Q106.5 61.5 112 65" fill="none" stroke="#DB2777" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M128 65 Q133.5 61.5 139 65" fill="none" stroke="#DB2777" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="107" cy="74" r="5.5" fill="#1E293B"/>
+                    <circle cx="133" cy="74" r="5.5" fill="#1E293B"/>
+                    <circle cx="108.9" cy="71.9" r="2.2" fill="#FFFFFF"/>
+                    <circle cx="134.9" cy="71.9" r="2.2" fill="#FFFFFF"/>
+                    <circle cx="105.3" cy="75.8" r="1.1" fill="#FFFFFF" opacity="0.88"/>
+                    <circle cx="131.3" cy="75.8" r="1.1" fill="#FFFFFF" opacity="0.88"/>
+
+                    <!-- 부드러운 분홍 볼터치 & 작은 수염 선 -->
+                    <ellipse cx="95.5" cy="83" rx="6.8" ry="3.8" fill="#FB7185" opacity="0.52"/>
+                    <ellipse cx="144.5" cy="83" rx="6.8" ry="3.8" fill="#FB7185" opacity="0.52"/>
+                    <line x1="87" y1="79" x2="93" y2="80.5" stroke="#F472B6" stroke-width="1.3" stroke-linecap="round" opacity="0.75"/>
+                    <line x1="147" y1="80.5" x2="153" y2="79" stroke="#F472B6" stroke-width="1.3" stroke-linecap="round" opacity="0.75"/>
+
+                    <!-- 하트 코 & 다정한 'ㅅ' 미소 -->
+                    <path d="M120 84.5 C116.5 81.5, 115.5 79, 118 78.2 C119.3 77.8, 120 79, 120 79 C120 79, 120.7 77.8, 122 78.2 C124.5 79, 123.5 81.5, 120 84.5 Z" fill="#FB7185"/>
+                    <path d="M120 84.5 L120 88.2 M113 91.2 Q116.5 94.6 120 88.2 Q123.5 94.6 127 91.2" fill="none" stroke="#BE185D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  `;
+
+            return `
+                <svg viewBox="0 0 240 250" class="w-full h-full character-animate" xmlns="http://www.w3.org/2000/svg">
+                    ${defsSVG}
+                    ${bgWeatherElements}
+                    ${backpackAndTailSVG}
+                    ${clothesSVG}
+                    ${headSVG}
+                    ${hatOrAccessorySVG}
+                    <rect x="0" y="0" width="240" height="250" filter="url(#paperGrain)" opacity="0.65" pointer-events="none"/>
+                </svg>
+            `;
+        }
+
+        function getPresetIdFromWeather(temp, weatherCode) {
+            const rainyCodes = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 71, 73, 75, 77, 80, 81, 82, 85, 86, 95, 96, 99];
+            if (rainyCodes.includes(weatherCode)) {
+                return 'rainy';
+            }
+            if (temp <= 4) return 'freezing';
+            if (temp <= 11) return 'chilly';
+            if (temp <= 19) return 'cool';
+            if (temp <= 24) return 'mild';
+            return 'hot';
+        }
+
+        function renderWeatherOutfitBoard() {
+            const preset = WEATHER_PRESETS.find(p => p.id === currentWeatherState.presetId) || WEATHER_PRESETS[2];
+
+            const bearBtn = document.getElementById('char-bear-btn');
+            const rabbitBtn = document.getElementById('char-rabbit-btn');
+            if (bearBtn && rabbitBtn) {
+                if (currentCharacter === 'bear') {
+                    bearBtn.className = 'px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 bg-amber-600 text-white shadow-sm';
+                    rabbitBtn.className = 'px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 text-slate-600 hover:text-slate-900';
+                } else {
+                    rabbitBtn.className = 'px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 bg-pink-400 text-white shadow-sm';
+                    bearBtn.className = 'px-2.5 py-1 rounded-lg text-xs sm:text-sm transition flex items-center gap-1 text-slate-600 hover:text-slate-900';
+                }
+            }
+
+            const locEl = document.getElementById('location-label');
+            const iconEl = document.getElementById('weather-main-icon');
+            const tempEl = document.getElementById('weather-temp-display');
+            const badgeEl = document.getElementById('weather-condition-badge');
+            const headlineEl = document.getElementById('outfit-headline');
+            const descEl = document.getElementById('outfit-description');
+            const tagsEl = document.getElementById('outfit-tags');
+            const stageEl = document.getElementById('character-stage');
+
+            if (locEl) locEl.textContent = currentWeatherState.locationName;
+            if (iconEl) iconEl.textContent = preset.icon;
+            if (tempEl) tempEl.textContent = `${Math.round(currentWeatherState.temp)}°C`;
+            if (badgeEl) badgeEl.textContent = preset.conditionText;
+            if (headlineEl) headlineEl.textContent = preset.headline;
+            if (descEl) descEl.textContent = preset.description;
+
+            if (tagsEl) {
+                tagsEl.innerHTML = preset.tags.map(tag => `
+                    <span class="bg-amber-100/80 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-lg text-xs sm:text-sm">
+                        ${tag}
+                    </span>
+                `).join('');
+            }
+
+            if (stageEl) {
+                stageEl.innerHTML = renderCharacterSVG(preset.outfitType, currentCharacter);
+            }
+
+            const presetContainer = document.getElementById('weather-preset-buttons');
+            if (presetContainer) {
+                presetContainer.innerHTML = WEATHER_PRESETS.map(p => {
+                    const isSelected = p.id === preset.id;
+                    return `
+                        <button onclick="selectWeatherPreset('${p.id}')"
+                            class="weather-chip flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border-2 text-center ${
+                                isSelected
+                                    ? 'bg-amber-400 border-amber-500 text-white shadow-md scale-[1.03]'
+                                    : 'bg-slate-50 hover:bg-amber-50 border-slate-200 text-slate-700'
+                            }">
+                            <span class="text-base sm:text-lg leading-none mb-0.5">${p.icon}</span>
+                            <span class="text-[11px] sm:text-xs leading-tight">${p.label}</span>
+                            <span class="text-[10px] opacity-80">${p.tempRange}</span>
+                        </button>
+                    `;
+                }).join('');
+            }
+        }
+
+        function setCharacterType(characterType) {
+            currentCharacter = characterType;
+            try {
+                localStorage.setItem('morning_mission_character', characterType);
+            } catch (e) {}
+            playTone([659.25, 783.99], [0.08, 0.12], 'sine', 0.2);
+            renderWeatherOutfitBoard();
+        }
+
+        function selectWeatherPreset(presetId) {
+            const preset = WEATHER_PRESETS.find(p => p.id === presetId);
+            if (!preset) return;
+            currentWeatherState = {
+                presetId: preset.id,
+                temp: preset.sampleTemp,
+                locationName: '직접 선택한 날씨',
+                isLive: false,
+                conditionLabel: preset.conditionText
+            };
+            playTone([587.33, 783.99], [0.08, 0.12], 'sine', 0.2);
+            renderWeatherOutfitBoard();
+        }
+
+        function speakOutfitGuide() {
+            const preset = WEATHER_PRESETS.find(p => p.id === currentWeatherState.presetId) || WEATHER_PRESETS[2];
+            const msg = `오늘 기온은 ${Math.round(currentWeatherState.temp)}도, ${preset.conditionText}예요. ${preset.headline}`;
+            speakKorean(msg);
+        }
+
+        async function fetchLiveWeather(userTriggered = false) {
+            const locEl = document.getElementById('location-label');
+            if (locEl && userTriggered) {
+                locEl.textContent = '날씨 확인 중...';
+            }
+
+            const queryWeather = async (lat, lon, label) => {
+                try {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('날씨 API 응답 오류');
+                    const data = await res.json();
+                    if (data && data.current) {
+                        const temp = data.current.temperature_2m;
+                        const code = data.current.weather_code;
+                        const matchedPresetId = getPresetIdFromWeather(temp, code);
+                        currentWeatherState = {
+                            presetId: matchedPresetId,
+                            temp: temp,
+                            locationName: `${label} 실시간`,
+                            isLive: true,
+                            conditionLabel: ''
+                        };
+                        renderWeatherOutfitBoard();
+                        if (userTriggered) {
+                            playSuccessSound();
+                        }
+                    }
+                } catch (err) {
+                    console.warn('실시간 날씨 로드 실패, 기본값 사용:', err);
+                    currentWeatherState.locationName = '서울 추천 날씨';
+                    renderWeatherOutfitBoard();
+                }
+            };
+
+            await queryWeather(37.5665, 126.9780, '서울');
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        queryWeather(pos.coords.latitude, pos.coords.longitude, '우리 동네');
+                    },
+                    () => {},
+                    { timeout: 4000 }
+                );
+            }
+        }
+
+        /**
+         * 5. 미션 카드 렌더링 (2행 3열) 및 프로그레스 바 제어
+         */
+        function renderMissions() {
+            const grid = document.getElementById('mission-grid');
+            if (!grid) return;
+
+            grid.innerHTML = MISSIONS.map((mission, index) => {
+                const isDone = completedIds.includes(mission.id);
+                const orderNum = index + 1;
+
+                return `
+                    <div onclick="toggleMission('${mission.id}')"
+                        role="button"
+                        tabindex="0"
+                        aria-pressed="${isDone}"
+                        class="mission-card ${isDone ? 'completed' : 'uncompleted'} rounded-[1.75rem] p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between min-h-[185px] lg:min-h-[210px]">
+                        
+                        <!-- 상단 순서 배지 & 보조 아이콘 -->
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-3 py-0.5 rounded-full text-xs sm:text-sm ${
+                                isDone
+                                    ? 'bg-emerald-500 text-white shadow-sm'
+                                    : 'bg-slate-100 text-slate-600'
+                            }">
+                                ${orderNum}번째 미션
+                            </span>
+                            <span class="text-xl sm:text-2xl opacity-80">${mission.subIcon}</span>
+                        </div>
+
+                        <!-- 중앙 메인 아이콘 & 텍스트 -->
+                        <div class="flex items-center gap-3.5 my-auto">
+                            <div class="${mission.color} w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl shadow-inner shrink-0 ${isDone ? '' : 'floating-emoji'}">
+                                ${mission.icon}
+                            </div>
+                            <div class="text-left">
+                                <h2 class="text-xl sm:text-2xl text-slate-800 mb-1 leading-tight ${isDone ? 'line-through decoration-emerald-500 decoration-4 opacity-75' : ''}">
+                                    ${mission.title}
+                                </h2>
+                                <p class="text-sm sm:text-base text-slate-600 leading-snug">
+                                    ${mission.subtitle}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 하단 상태 안내 바 -->
+                        <div class="mt-3 pt-2.5 border-t-2 ${isDone ? 'border-emerald-200/70' : 'border-slate-100'} flex items-center justify-between">
+                            <span class="text-sm sm:text-base ${isDone ? 'text-emerald-700' : 'text-sky-600'}">
+                                ${isDone ? '✅ 완료했어요!' : '👆 다 했으면 터치!'}
+                            </span>
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm ${
+                                isDone ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'
+                            }">
+                                ✓
+                            </div>
+                        </div>
+
+                        <!-- 완료 시 찍히는 참 잘했어요 도장 -->
+                        ${isDone ? `
+                            <div class="stamp-badge pointer-events-none absolute top-3 right-3 bg-rose-500/95 text-white border-4 border-white px-3 py-1 rounded-xl shadow-lg text-base sm:text-lg tracking-wide">
+                                참 잘했어요! ⭐
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const total = MISSIONS.length;
+            const doneCount = completedIds.length;
+            const percent = Math.round((doneCount / total) * 100);
+
+            const stepCounter = document.getElementById('step-counter');
+            const percentText = document.getElementById('percent-text');
+            const fillBar = document.getElementById('progress-bar-fill');
+            const rocket = document.getElementById('rocket-tracker');
+
+            if (stepCounter) stepCounter.textContent = `${doneCount} / ${total} 완료`;
+            if (percentText) percentText.textContent = `${percent}%`;
+            if (fillBar) fillBar.style.width = `${percent}%`;
+            if (rocket) {
+                const clampedLeft = Math.min(Math.max(percent, 3), 94);
+                rocket.style.left = `${clampedLeft}%`;
+            }
+        }
+
+        function toggleMission(missionId) {
+            const mission = MISSIONS.find(m => m.id === missionId);
+            if (!mission) return;
+
+            const exists = completedIds.includes(missionId);
+            if (exists) {
+                completedIds = completedIds.filter(id => id !== missionId);
+                playCancelSound();
+            } else {
+                completedIds.push(missionId);
+                if (completedIds.length === MISSIONS.length) {
+                    playFanfareSound();
+                    speakKorean(`와! ${MISSIONS.length}가지 아침 미션을 모두 끝냈어요! 즐거운 학교 다녀오세요!`);
+                    setTimeout(() => {
+                        triggerCelebration();
+                    }, 300);
+                } else {
+                    playSuccessSound();
+                    speakKorean(mission.voiceText);
+                }
+            }
+
+            saveProgress();
+            renderMissions();
+        }
+
+        /**
+         * 6. 100% 완료 축하 폭죽 & 모달 / 초기화 모달
+         */
+        function triggerCelebration() {
+            const modal = document.getElementById('celebration-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 110,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 70,
+                        angle: 60,
+                        spread: 65,
+                        origin: { x: 0, y: 0.65 }
+                    });
+                    confetti({
+                        particleCount: 70,
+                        angle: 120,
+                        spread: 65,
+                        origin: { x: 1, y: 0.65 }
+                    });
+                }, 350);
+            }
+        }
+
+        function closeCelebrationModal() {
+            const modal = document.getElementById('celebration-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function openResetConfirm() {
+            const modal = document.getElementById('reset-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeResetConfirm() {
+            const modal = document.getElementById('reset-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function confirmReset() {
+            completedIds = [];
+            saveProgress();
+            closeResetConfirm();
+            playCancelSound();
+            renderMissions();
+        }
+
+        // 페이지 로드 시 초기화 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTodayDate();
+            loadProgress();
+            updateSoundUI();
+            renderWeatherOutfitBoard();
+            renderMissions();
+            fetchLiveWeather(false);
+        });
+    </script>
+</body>
+</html>
