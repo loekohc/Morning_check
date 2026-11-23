@@ -87,24 +87,6 @@
             animation: floatEmoji 3s ease-in-out infinite;
         }
 
-        /* 프로그레스 바 로켓 움직임 */
-        .rocket-tracker {
-            transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        /* 프로그레스 바 채우기 애니메이션 */
-        .progress-fill {
-            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background: linear-gradient(90deg, #60A5FA 0%, #34D399 50%, #FBBF24 100%);
-            background-size: 200% 100%;
-            animation: shimmer 2s linear infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
         /* 모달 등장 애니메이션 */
         @keyframes modalBounce {
             0% { opacity: 0; transform: scale(0.7); }
@@ -127,13 +109,10 @@
             transform-origin: bottom center;
         }
 
-        /* 날씨 칩 버튼 활성화 스타일 */
-        .weather-chip {
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            -webkit-tap-highlight-color: transparent;
-        }
-        .weather-chip:active {
-            transform: scale(0.94);
+        @media screen and (min-width: 1024px) and (orientation: landscape) {
+            #weather-outfit-card > div:first-child {
+                margin-block: auto;
+            }
         }
 
         /* 16:10 가로 대형 화면 최적화 (1920×1200 기준) */
@@ -147,7 +126,8 @@
                 height: 100dvh;
                 min-height: 0;
                 box-sizing: border-box;
-                overflow: hidden;
+                overflow-x: hidden;
+                overflow-y: auto;
                 padding: 14px 22px 10px;
             }
             body > div:first-of-type {
@@ -177,10 +157,6 @@
             #weather-outfit-card #outfit-description {
                 line-height: 1.45;
                 margin-bottom: 8px;
-            }
-            #weather-outfit-card > div:last-child {
-                margin-top: 8px;
-                padding-top: 8px;
             }
             body > div:first-of-type > div:nth-child(2) {
                 min-height: 0;
@@ -236,10 +212,6 @@
             }
             #weather-outfit-card #outfit-tags {
                 gap: 4px;
-            }
-            #weather-outfit-card #weather-preset-buttons button {
-                padding-top: 4px;
-                padding-bottom: 4px;
             }
             #mission-grid {
                 gap: 9px;
@@ -334,15 +306,6 @@
                 </div>
             </div>
 
-            <!-- 하단: 날씨·기온대 직접 선택할 수 있는 퀵 버튼 (3열 2행) -->
-            <div class="mt-3 pt-2.5 border-t-2 border-amber-100/80">
-                <div class="text-xs text-slate-400 mb-1.5">
-                    👆 날씨를 눌러 다른 옷차림도 미리 볼 수 있어요!
-                </div>
-                <div id="weather-preset-buttons" class="grid grid-cols-3 gap-1.5">
-                    <!-- JS에서 6가지 날씨/기온 버튼 생성 -->
-                </div>
-            </div>
         </aside>
 
         <!-- [우측 영역] 상단 헤더 + 가로 프로그레스 바 / 하단 2행 3열 미션 카드 그리드 (가로 화면에서 8칸 차지) -->
@@ -382,39 +345,6 @@
                     </div>
                 </div>
 
-                <!-- 가로형 프로그레스 바 카드 -->
-                <div class="bg-white/95 backdrop-blur-sm border-4 border-sky-200 rounded-3xl p-4 sm:p-5 shadow-lg">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl sm:text-2xl">🚀</span>
-                            <span class="text-lg sm:text-xl text-slate-700">학교 출발 준비율</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="step-counter" class="bg-sky-100 text-sky-700 px-3 py-0.5 rounded-full text-base sm:text-lg">
-                                0 / 6 완료
-                            </span>
-                            <span id="percent-text" class="text-2xl sm:text-3xl text-emerald-600">
-                                0%
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- 프로그레스 트랙 -->
-                    <div class="relative pt-4 pb-1">
-                        <!-- 트랙 배경 -->
-                        <div class="w-full h-6 sm:h-8 bg-slate-100 rounded-full overflow-hidden border-2 border-slate-200 p-1">
-                            <div id="progress-bar-fill" class="progress-fill h-full rounded-full" style="width: 0%;"></div>
-                        </div>
-                        <!-- 트랙 위를 달리는 로켓 아이콘 -->
-                        <div id="rocket-tracker" class="rocket-tracker absolute top-0 text-3xl sm:text-4xl transform -translate-x-1/2 pointer-events-none drop-shadow" style="left: 3%;">
-                            🚀
-                        </div>
-                        <!-- 도착지 학교 아이콘 -->
-                        <div class="absolute right-0 -top-1 text-3xl sm:text-4xl pointer-events-none">
-                            🏫
-                        </div>
-                    </div>
-                </div>
             </header>
 
             <!-- 우측 하단: 2행 3열 여섯 가지 미션 카드 그리드 -->
@@ -808,10 +738,6 @@
                         <stop offset="0%" stop-color="#FDA4AF"/>
                         <stop offset="100%" stop-color="#F472B6"/>
                     </linearGradient>
-                    <linearGradient id="backpackStrapGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#FDE047"/>
-                        <stop offset="100%" stop-color="#EAB308"/>
-                    </linearGradient>
                     <linearGradient id="skyDayGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.85"/>
                         <stop offset="68%" stop-color="#FEF9C3" stop-opacity="0.35"/>
@@ -933,14 +859,54 @@
                 }
             `;
 
-            // 초1 노란 안전 책가방 어깨끈
-            const backpackStrapsSVG = `
-                <path d="M95 107 C91 128, 91 148, 96 164" fill="none" stroke="url(#backpackStrapGrad)" stroke-width="6.8" stroke-linecap="round"/>
-                <path d="M95 107 C91 128, 91 148, 96 164" fill="none" stroke="#CA8A04" stroke-width="1.3" stroke-linecap="round"/>
-                <path d="M145 107 C149 128, 149 148, 144 164" fill="none" stroke="url(#backpackStrapGrad)" stroke-width="6.8" stroke-linecap="round"/>
-                <path d="M145 107 C149 128, 149 148, 144 164" fill="none" stroke="#CA8A04" stroke-width="1.3" stroke-linecap="round"/>
-                <line x1="94" y1="136" x2="146" y2="136" stroke="#EAB308" stroke-width="3.6"/>
-                <rect x="115" y="132" width="10" height="8" rx="2.5" fill="#334155" stroke="#0F172A" stroke-width="1.2"/>
+            const trousersSVG = (base, shadow, highlight) => `
+                <defs>
+                    <linearGradient id="trouserFabric" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stop-color="${shadow}"/>
+                        <stop offset="0.22" stop-color="${base}"/>
+                        <stop offset="0.52" stop-color="${highlight}"/>
+                        <stop offset="0.82" stop-color="${base}"/>
+                        <stop offset="1" stop-color="${shadow}"/>
+                    </linearGradient>
+                </defs>
+                <path d="M96 164 Q108 169 120 166 Q132 169 144 164 L140 207 Q139 215 133 216 L126 216 Q121 215 120 207 L118.5 184 L116 207 Q115 216 108 216 H102 Q96 215 96 207 Z"
+                    fill="url(#trouserFabric)" stroke="${shadow}" stroke-width="2.2" stroke-linejoin="round" filter="url(#softShadow)"/>
+                <path d="M98 169 Q120 174 142 169" fill="none" stroke="${highlight}" stroke-width="2.4" opacity="0.75"/>
+                <path d="M102 173 Q108 176 114 181 M138 173 Q132 176 126 181" fill="none" stroke="${shadow}" stroke-width="1.6" opacity="0.7"/>
+                <path d="M120 173 Q123 183 119 193" fill="none" stroke="${shadow}" stroke-width="1.5" opacity="0.8"/>
+                <circle cx="120" cy="170" r="1.8" fill="${highlight}"/>
+                <path d="M99 186 Q104 190 111 189 M141 186 Q136 190 129 189" fill="none" stroke="${highlight}" stroke-width="1.6" opacity="0.45"/>
+                <path d="M97 207 Q106 211 115 208 M125 208 Q133 211 139 207" fill="none" stroke="${shadow}" stroke-width="1.5"/>
+                <path d="M99 211 Q107 213 114 211 M127 211 Q133 213 138 211" fill="none" stroke="${highlight}" stroke-width="1" opacity="0.8"/>
+            `;
+
+            const sneakersSVG = (base, accent) => `
+                <g filter="url(#softShadow)">
+                    <path d="M94 211 Q101 214 112 211 L117 218 Q122 220 119 226 Q118 228 113 228 H93 Q89 227 91 222 Z"
+                        fill="${base}" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M124 211 Q131 214 142 211 L147 218 Q152 220 149 226 Q148 228 143 228 H123 Q119 227 121 222 Z"
+                        fill="${base}" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M91 223 Q104 226 119 223 L119 227 Q117 229 113 229 H94 Q90 228 91 223 Z M121 223 Q134 226 149 223 L149 227 Q147 229 143 229 H124 Q120 228 121 223 Z"
+                        fill="#FFFDF8" stroke="#CBD5E1" stroke-width="1"/>
+                    <path d="M97 217 L110 217 M127 217 L140 217" stroke="${accent}" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M103 214 L108 220 M133 214 L138 220" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M94 220 Q98 222 101 221 M124 220 Q128 222 131 221" fill="none" stroke="${accent}" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
+            `;
+
+            const winterBootsSVG = `
+                <g filter="url(#softShadow)">
+                    <path d="M97 204 Q105 208 115 204 L116 216 Q120 220 118 226 H92 Q89 223 93 218 Z"
+                        fill="#765443" stroke="#49352D" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M125 204 Q135 208 143 204 L147 218 Q151 220 149 226 H123 Q120 223 124 218 Z"
+                        fill="#765443" stroke="#49352D" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M93 214 Q104 218 116 214 L116 219 Q105 222 92 218 Z M124 214 Q136 218 148 214 L149 219 Q136 222 124 218 Z"
+                        fill="#F2E6CF" stroke="#B99A72" stroke-width="1.4"/>
+                    <path d="M92 224 Q105 227 118 224 L118 228 H92 Z M123 224 Q136 227 149 224 L149 228 H123 Z"
+                        fill="#3E3937" stroke="#292524" stroke-width="1"/>
+                    <path d="M100 210 L101 218 M108 211 L109 218 M130 211 L131 218 M138 210 L139 218"
+                        stroke="#C9A983" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
             `;
 
             // 6가지 날씨별 일러스트풍 의상 렌더링
@@ -948,220 +914,349 @@
             let hatOrAccessorySVG = '';
 
             if (outfitType === 'winter_heavy') {
-                const coatMain = isBear ? '#2563EB' : '#F43F5E';
-                const coatDark = isBear ? '#1E3A8A' : '#9F1239';
-                const coatLight = isBear ? '#93C5FD' : '#FECDD3';
+                const coatMain = isBear ? '#405B73' : '#A95F6B';
+                const coatDark = isBear ? '#263B50' : '#743F4B';
+                const coatLight = isBear ? '#9CB4C4' : '#E5A5AA';
                 clothesSVG = `
-                    <!-- 기모 바지 & 입체 접힘 선 -->
-                    <rect x="96" y="172" width="19" height="44" rx="8.5" fill="#1E293B" stroke="#0F172A" stroke-width="2.2"/>
-                    <rect x="125" y="172" width="19" height="44" rx="8.5" fill="#1E293B" stroke="#0F172A" stroke-width="2.2"/>
-                    <path d="M100 192 Q105.5 195 111 192 M129 192 Q134.5 195 140 192" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
-                    <!-- 털 부츠 & 양털 커프스 -->
-                    <rect x="90" y="210" width="27" height="17" rx="8.5" fill="#78350F" stroke="#451A03" stroke-width="2.2"/>
-                    <rect x="123" y="210" width="27" height="17" rx="8.5" fill="#78350F" stroke="#451A03" stroke-width="2.2"/>
-                    <rect x="91" y="207" width="25" height="6.5" rx="3.2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
-                    <rect x="124" y="207" width="25" height="6.5" rx="3.2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
-
-                    <!-- 볼륨감 있는 롱패딩 몸통 -->
-                    <rect x="82" y="106" width="76" height="76" rx="24" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.5" filter="url(#softShadow)"/>
-                    <!-- 패딩 퀼팅 봉제선 & 하이라이트 -->
-                    <path d="M84 128 Q120 133 156 128" fill="none" stroke="${coatDark}" stroke-width="2.6"/>
-                    <path d="M84 150 Q120 155 156 150" fill="none" stroke="${coatDark}" stroke-width="2.6"/>
-                    <path d="M90 116 L90 168" stroke="${coatLight}" stroke-width="3.2" stroke-linecap="round" opacity="0.6"/>
-                    <path d="M149 116 L149 168" stroke="${coatLight}" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
-                    <!-- 지퍼 플랩 & 플랩 포켓 -->
-                    <line x1="120" y1="108" x2="120" y2="180" stroke="#F8FAFC" stroke-width="2.4" stroke-dasharray="4 2.5"/>
-                    <path d="M91 155 L109 155 L109 172 Q100 175 91 172 Z" fill="${coatDark}" opacity="0.42" stroke="${coatDark}" stroke-width="1.2"/>
-                    <path d="M131 155 L149 155 L149 172 Q140 175 131 172 Z" fill="${coatDark}" opacity="0.42" stroke="${coatDark}" stroke-width="1.2"/>
-
-                    <!-- 패딩 소매 & 벙어리 장갑 -->
-                    <rect x="61" y="112" width="23" height="51" rx="11.5" transform="rotate(14 75 117)" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.2"/>
-                    <rect x="156" y="112" width="23" height="51" rx="11.5" transform="rotate(-14 165 117)" fill="${coatMain}" stroke="${coatDark}" stroke-width="2.2"/>
-                    <path d="M65 134 L81 138 M159 138 L175 134" stroke="${coatDark}" stroke-width="2.2"/>
-                    <rect x="56" y="156" width="18" height="20" rx="9" transform="rotate(14 65 166)" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
-                    <rect x="166" y="156" width="18" height="20" rx="9" transform="rotate(-14 175 166)" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
-
-                    <!-- 체크 목도리 & 술 장식 -->
-                    <rect x="88" y="99" width="64" height="18" rx="9" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/>
-                    <line x1="103" y1="100" x2="103" y2="116" stroke="#EF4444" stroke-width="2.4"/>
-                    <line x1="120" y1="100" x2="120" y2="116" stroke="#EF4444" stroke-width="2.4"/>
-                    <line x1="137" y1="100" x2="137" y2="116" stroke="#EF4444" stroke-width="2.4"/>
-                    <rect x="130" y="112" width="17" height="36" rx="7" fill="#FACC15" stroke="#CA8A04" stroke-width="2"/>
-                    <line x1="134" y1="148" x2="134" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="138.5" y1="148" x2="138.5" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="143" y1="148" x2="143" y2="154" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+                    ${trousersSVG('#354353', '#202B38', '#647487')}
+                    ${winterBootsSVG}
+                    <defs>
+                        <linearGradient id="winterCoat" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0" stop-color="${coatDark}"/>
+                            <stop offset="0.2" stop-color="${coatMain}"/>
+                            <stop offset="0.48" stop-color="${coatLight}"/>
+                            <stop offset="0.72" stop-color="${coatMain}"/>
+                            <stop offset="1" stop-color="${coatDark}"/>
+                        </linearGradient>
+                        <linearGradient id="scarfWool" x1="0" y1="0" x2="0" y2="1">
+                            <stop stop-color="#D2A36C"/>
+                            <stop offset="1" stop-color="#9B674B"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M96 108 Q87 108 81 116 L66 145 Q63 151 69 156 L79 161 L96 132 Z"
+                        fill="url(#winterCoat)" stroke="${coatDark}" stroke-width="2.4" stroke-linejoin="round"/>
+                    <path d="M144 108 Q153 108 159 116 L174 145 Q177 151 171 156 L161 161 L144 132 Z"
+                        fill="url(#winterCoat)" stroke="${coatDark}" stroke-width="2.4" stroke-linejoin="round"/>
+                    <path d="M96 105 Q106 100 120 104 Q134 100 144 105 Q155 109 158 122 L154 181 Q120 190 86 181 L82 122 Q85 109 96 105 Z"
+                        fill="url(#winterCoat)" stroke="${coatDark}" stroke-width="2.6" stroke-linejoin="round" filter="url(#softShadow)"/>
+                    <path d="M88 128 Q120 134 152 128 M87 150 Q120 156 153 150 M87 171 Q120 177 153 171"
+                        fill="none" stroke="${coatDark}" stroke-width="2.4" opacity="0.78"/>
+                    <path d="M90 124 Q120 130 150 124 M89 146 Q120 152 151 146 M89 167 Q120 173 151 167"
+                        fill="none" stroke="${coatLight}" stroke-width="1.6" opacity="0.72"/>
+                    <path d="M98 111 Q94 138 97 174 M142 111 Q146 138 143 174"
+                        fill="none" stroke="${coatLight}" stroke-width="2" opacity="0.5"/>
+                    <path d="M120 111 L120 180" stroke="#F5EBDD" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M123 114 L123 177" stroke="${coatDark}" stroke-width="1" stroke-dasharray="1.5 3" opacity="0.8"/>
+                    <path d="M91 153 Q100 150 109 153 L109 168 Q100 171 91 168 Z M131 153 Q140 150 149 153 L149 168 Q140 171 131 168 Z"
+                        fill="${coatDark}" fill-opacity="0.34" stroke="${coatDark}" stroke-width="1.5"/>
+                    <path d="M94 155 Q100 153 106 155 M134 155 Q140 153 146 155" fill="none" stroke="${coatLight}" stroke-width="1.4" opacity="0.7"/>
+                    <path d="M66 144 Q72 149 81 151 M159 151 Q168 149 174 144" fill="none" stroke="${coatDark}" stroke-width="2"/>
+                    <path d="M67 151 Q72 156 78 157 M162 157 Q168 156 173 151" fill="none" stroke="${coatLight}" stroke-width="2.2" opacity="0.8"/>
+                    <path d="M58 157 Q65 153 73 159 L76 169 Q75 177 68 178 L61 175 Q56 170 58 157 Z M167 159 Q175 153 182 157 Q184 170 179 175 L172 178 Q165 177 164 169 Z"
+                        fill="#C99468" stroke="#80583E" stroke-width="1.8"/>
+                    <path d="M61 162 Q67 159 73 163 M168 163 Q174 159 180 162" fill="none" stroke="#E8C9A6" stroke-width="1.4"/>
+                    <path d="M89 102 Q120 112 151 102 L148 115 Q120 124 92 115 Z"
+                        fill="url(#scarfWool)" stroke="#79533F" stroke-width="1.8"/>
+                    <path d="M132 111 Q141 111 149 108 L148 145 Q143 150 136 146 Z"
+                        fill="url(#scarfWool)" stroke="#79533F" stroke-width="1.8"/>
+                    <path d="M96 106 Q120 115 145 106 M100 111 Q120 119 141 111 M102 104 L105 114 M115 108 L117 118 M130 108 L128 117 M140 105 L137 114"
+                        fill="none" stroke="#E5C39A" stroke-width="1.4" opacity="0.85"/>
+                    <path d="M138 146 L138 152 M143 146 L143 152 M147 144 L147 150" stroke="#79533F" stroke-width="1.4" stroke-linecap="round"/>
                 `;
                 hatOrAccessorySVG = `
-                    <!-- 방울 니트 모자 -->
-                    <path d="M89 55 C93 35, 147 35, 151 55 Z" fill="${isBear ? '#3B82F6' : '#FB7185'}" stroke="${coatDark}" stroke-width="2.2"/>
-                    <path d="M106 39 Q104 47 106 52 M120 38 L120 52 M134 39 Q136 47 134 52" fill="none" stroke="${coatDark}" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
-                    <rect x="87" y="50" width="66" height="10" rx="5" fill="#FEF08A" stroke="#CA8A04" stroke-width="1.8"/>
-                    <circle cx="120" cy="33" r="9.5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.8"/>
+                    <path d="M88 56 Q91 34 120 32 Q149 34 152 56 Q120 61 88 56 Z"
+                        fill="${isBear ? '#536C82' : '#B9777F'}" stroke="${coatDark}" stroke-width="2.2"/>
+                    <path d="M95 51 Q120 55 145 51 L147 60 Q120 64 93 60 Z"
+                        fill="${coatLight}" stroke="${coatDark}" stroke-width="1.6"/>
+                    <path d="M102 39 Q107 45 104 52 M112 35 Q116 43 114 53 M127 35 Q124 44 127 53 M138 39 Q133 45 136 52"
+                        fill="none" stroke="${coatDark}" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+                    <circle cx="120" cy="31" r="9" fill="#F5EBDD" stroke="#D5C9B6" stroke-width="1.8"/>
+                    <ellipse cx="117" cy="28" rx="3" ry="1.8" fill="#FFFFFF" opacity="0.85"/>
                 `;
             } else if (outfitType === 'winter_light') {
-                const jacketMain = isBear ? '#0EA5E9' : '#C084FC';
-                const jacketDark = isBear ? '#0369A1' : '#7E22CE';
-                const jacketLight = isBear ? '#7DD3FC' : '#E9D5FF';
+                const jacketMain = isBear ? '#527C87' : '#967BA5';
+                const jacketDark = isBear ? '#31545D' : '#684F77';
+                const jacketLight = isBear ? '#B7D0CE' : '#D8C5DD';
                 clothesSVG = `
-                    <!-- 바지 & 운동화 -->
-                    <rect x="97" y="170" width="18" height="46" rx="8" fill="#334155" stroke="#1E293B" stroke-width="2.2"/>
-                    <rect x="125" y="170" width="18" height="46" rx="8" fill="#334155" stroke="#1E293B" stroke-width="2.2"/>
-                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
-                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
-                    <path d="M96 218 L112 218 M128 218 L144 218" stroke="${jacketMain}" stroke-width="3" stroke-linecap="round"/>
-
-                    <!-- 케이블 니트 이너 -->
-                    <rect x="89" y="107" width="62" height="67" rx="16" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
-                    <path d="M114 114 L114 166 M126 114 L126 166" stroke="#F59E0B" stroke-width="2.4" stroke-dasharray="5 3" opacity="0.75"/>
-
-                    <!-- 경량 패딩 자켓 & 퀼팅 디테일 -->
-                    <path d="M85 107 L110 107 L110 174 L85 174 Q82 140 85 107 Z" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2.2"/>
-                    <path d="M130 107 L155 107 Q158 140 155 174 L130 174 Z" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2.2"/>
-                    <line x1="85" y1="129" x2="110" y2="129" stroke="${jacketDark}" stroke-width="1.8"/>
-                    <line x1="85" y1="151" x2="110" y2="151" stroke="${jacketDark}" stroke-width="1.8"/>
-                    <line x1="130" y1="129" x2="155" y2="129" stroke="${jacketDark}" stroke-width="1.8"/>
-                    <line x1="130" y1="151" x2="155" y2="151" stroke="${jacketDark}" stroke-width="1.8"/>
-                    <path d="M89 112 L89 168" stroke="${jacketLight}" stroke-width="2.4" stroke-linecap="round" opacity="0.6"/>
-                    <circle cx="105" cy="120" r="2.2" fill="#FFFFFF"/>
-                    <circle cx="105" cy="140" r="2.2" fill="#FFFFFF"/>
-                    <circle cx="105" cy="160" r="2.2" fill="#FFFFFF"/>
-
-                    <!-- 소매 & 손 -->
-                    <rect x="66" y="111" width="20" height="49" rx="10" transform="rotate(12 75 114)" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2"/>
-                    <rect x="154" y="111" width="20" height="49" rx="10" transform="rotate(-12 165 114)" fill="${jacketMain}" stroke="${jacketDark}" stroke-width="2"/>
-                    <circle cx="68" cy="163" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
-                    <circle cx="172" cy="163" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
-                    ${backpackStrapsSVG}
+                    ${trousersSVG('#48515B', '#303A44', '#78838A')}
+                    ${sneakersSVG('#F4F0E7', jacketMain)}
+                    <defs>
+                        <linearGradient id="lightKnit" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="#C9B89D"/>
+                            <stop offset="0.48" stop-color="#F5EBDD"/>
+                            <stop offset="1" stop-color="#C9B89D"/>
+                        </linearGradient>
+                        <linearGradient id="lightPuffer" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="${jacketDark}"/>
+                            <stop offset="0.45" stop-color="${jacketLight}"/>
+                            <stop offset="0.78" stop-color="${jacketMain}"/>
+                            <stop offset="1" stop-color="${jacketDark}"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M100 106 Q120 100 140 106 L145 170 Q120 178 95 170 Z"
+                        fill="url(#lightKnit)" stroke="#A99477" stroke-width="1.8"/>
+                    <path d="M109 111 C114 118 109 124 114 131 C119 138 112 144 117 151 M131 111 C126 118 131 124 126 131 C121 138 128 144 123 151"
+                        fill="none" stroke="#D0B996" stroke-width="2.1" stroke-linecap="round"/>
+                    <path d="M106 113 L106 160 M114 112 L114 163 M126 112 L126 163 M134 113 L134 160"
+                        fill="none" stroke="#BCA887" stroke-width="1.2" opacity="0.75"/>
+                    <path d="M94 110 Q84 111 79 120 L67 146 Q64 152 70 156 L79 160 L97 128 Z"
+                        fill="url(#lightPuffer)" stroke="${jacketDark}" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M146 110 Q156 111 161 120 L173 146 Q176 152 170 156 L161 160 L143 128 Z"
+                        fill="url(#lightPuffer)" stroke="${jacketDark}" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M96 106 Q105 102 111 104 L111 173 Q100 176 86 173 L82 128 Q83 112 96 106 Z"
+                        fill="url(#lightPuffer)" stroke="${jacketDark}" stroke-width="2.3" stroke-linejoin="round"/>
+                    <path d="M129 104 Q136 102 144 106 Q157 112 158 128 L154 173 Q140 176 129 173 Z"
+                        fill="url(#lightPuffer)" stroke="${jacketDark}" stroke-width="2.3" stroke-linejoin="round"/>
+                    <path d="M87 128 Q99 131 110 128 M86 150 Q99 153 110 150 M130 128 Q142 131 154 128 M130 150 Q143 153 155 150"
+                        fill="none" stroke="${jacketDark}" stroke-width="1.8" opacity="0.8"/>
+                    <path d="M89 125 Q100 128 109 125 M89 147 Q99 150 109 147 M131 125 Q141 128 152 125 M131 147 Q141 150 152 147"
+                        fill="none" stroke="${jacketLight}" stroke-width="1.2" opacity="0.8"/>
+                    <path d="M96 111 Q93 139 96 168 M145 111 Q148 139 145 168"
+                        fill="none" stroke="${jacketLight}" stroke-width="2" opacity="0.58"/>
+                    <path d="M119 107 L119 172" stroke="#F7F1E7" stroke-width="2"/>
+                    <path d="M122 110 L122 169" stroke="${jacketDark}" stroke-width="1" stroke-dasharray="1 3" opacity="0.8"/>
+                    <path d="M90 154 Q98 151 106 154 L106 165 Q98 168 90 165 Z M134 154 Q142 151 150 154 L150 165 Q142 168 134 165 Z"
+                        fill="${jacketDark}" fill-opacity="0.38" stroke="${jacketDark}" stroke-width="1.3"/>
+                    <path d="M65 145 Q72 150 80 152 M160 152 Q168 150 175 145 M68 153 Q73 157 79 158 M161 158 Q167 157 172 153"
+                        fill="none" stroke="${jacketLight}" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M91 169 Q120 176 149 169" fill="none" stroke="${jacketDark}" stroke-width="1.7" stroke-dasharray="2 3"/>
+                    <path d="M69 153 Q67 157 68 162 Q70 169 76 166 L82 158 L80 152 Z M171 153 Q173 157 172 162 Q170 169 164 166 L158 158 L160 152 Z"
+                        fill="${furFill}" stroke="${furStroke}" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M69 161 Q72 163 75 161 M165 161 Q168 163 171 161"
+                        fill="none" stroke="${furStroke}" stroke-width="1.2" stroke-linecap="round"/>
                 `;
             } else if (outfitType === 'spring_cardigan') {
-                const cardiMain = isBear ? '#10B981' : '#FB923C';
-                const cardiDark = isBear ? '#047857' : '#C2410C';
-                const cardiLight = isBear ? '#6EE7B7' : '#FED7AA';
+                const cardiMain = isBear ? '#758A70' : '#C88770';
+                const cardiDark = isBear ? '#485D49' : '#895345';
+                const cardiLight = isBear ? '#C3CEB1' : '#E8BCA2';
                 clothesSVG = `
                     ${!isBear
-                        ? `<!-- 플리츠 스커트 & 레이스 양말 -->
-                           <path d="M91 162 L149 162 L159 193 L81 193 Z" fill="#60A5FA" stroke="#1D4ED8" stroke-width="2.2"/>
-                           <line x1="104" y1="163" x2="99" y2="192" stroke="#1D4ED8" stroke-width="2"/>
-                           <line x1="120" y1="163" x2="120" y2="192" stroke="#1D4ED8" stroke-width="2"/>
-                           <line x1="136" y1="163" x2="141" y2="192" stroke="#1D4ED8" stroke-width="2"/>
-                           <rect x="99" y="192" width="14" height="24" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.8"/>
-                           <rect x="127" y="192" width="14" height="24" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.8"/>`
-                        : `<!-- 데님 팬츠 -->
-                           <rect x="97" y="168" width="18" height="48" rx="8" fill="#1E3A8A" stroke="#172554" stroke-width="2.2"/>
-                           <rect x="125" y="168" width="18" height="48" rx="8" fill="#1E3A8A" stroke="#172554" stroke-width="2.2"/>
-                           <line x1="106" y1="172" x2="106" y2="212" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 3"/>
-                           <line x1="134" y1="172" x2="134" y2="212" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 3"/>`
+                        ? `<path d="M91 162 Q120 167 149 162 L157 192 Q120 199 83 192 Z"
+                               fill="#65798F" stroke="#364A60" stroke-width="2.2" stroke-linejoin="round"/>
+                           <path d="M95 168 Q120 172 145 168 M102 166 L96 190 M120 169 L120 194 M138 166 L144 190"
+                               fill="none" stroke="#C1B5A1" stroke-width="1.5" opacity="0.85"/>
+                           <path d="M84 190 Q120 197 156 190 L157 194 Q120 202 83 194 Z" fill="#D9C9AE" stroke="#7C6755" stroke-width="1.3"/>
+                           <path d="M99 193 Q106 194 113 193 L113 216 L101 216 Z M127 193 Q134 194 141 193 L139 216 L127 216 Z"
+                               fill="#F1E7D7" stroke="#A99B87" stroke-width="1.5"/>
+                           <path d="M101 199 L111 199 M129 199 L139 199 M101 203 L111 203 M129 203 L139 203"
+                               stroke="#D1C2AE" stroke-width="1.1"/>`
+                        : `${trousersSVG('#425A72', '#26394D', '#7892A8')}`
                     }
-                    <!-- 스니커즈 -->
-                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#F43F5E" stroke="#BE123C" stroke-width="2"/>
-                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#F43F5E" stroke="#BE123C" stroke-width="2"/>
-                    <rect x="92" y="221" width="24" height="4" rx="2" fill="#FFFFFF"/>
-                    <rect x="124" y="221" width="24" height="4" rx="2" fill="#FFFFFF"/>
-
-                    <!-- 이너 티셔츠 & 별 프린트 -->
-                    <rect x="91" y="107" width="58" height="61" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-                    <polygon points="120,124 123,131 131,132 125,137 127,145 120,141 113,145 115,137 109,132 117,131" fill="#FBBF24" stroke="#D97706" stroke-width="1.2"/>
-
-                    <!-- 포근한 니트 가디건 -->
-                    <path d="M86 107 L111 107 L111 168 L86 168 Q83 138 86 107 Z" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2.2"/>
-                    <path d="M129 107 L154 107 Q157 138 154 168 L129 168 Z" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2.2"/>
-                    <path d="M90 113 L90 162 M150 113 L150 162" stroke="${cardiLight}" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
-                    <rect x="67" y="111" width="19" height="47" rx="9.5" transform="rotate(12 75 114)" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2"/>
-                    <rect x="154" y="111" width="19" height="47" rx="9.5" transform="rotate(-12 165 114)" fill="${cardiMain}" stroke="${cardiDark}" stroke-width="2"/>
+                    ${isBear ? sneakersSVG('#F3E9D8', '#B56E58') : sneakersSVG('#E8D8C8', '#A96867')}
+                    <defs>
+                        <linearGradient id="cardiganKnit" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="${cardiDark}"/>
+                            <stop offset="0.45" stop-color="${cardiLight}"/>
+                            <stop offset="0.72" stop-color="${cardiMain}"/>
+                            <stop offset="1" stop-color="${cardiDark}"/>
+                        </linearGradient>
+                        <linearGradient id="springShirt" x1="0" y1="0" x2="0" y2="1">
+                            <stop stop-color="#FFFCF5"/>
+                            <stop offset="1" stop-color="#E9E0D2"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M98 106 Q120 101 142 106 L148 167 Q120 174 92 167 Z"
+                        fill="url(#springShirt)" stroke="#B8AA96" stroke-width="1.6"/>
+                    <path d="M103 108 L115 120 L120 112 L125 120 L137 108"
+                        fill="#FFFDF8" stroke="#B8AA96" stroke-width="1.4" stroke-linejoin="round"/>
+                    <path d="M120 121 L120 162 M116 129 L120 134 L124 129"
+                        fill="none" stroke="#B8AA96" stroke-width="1.3"/>
+                    <circle cx="120" cy="140" r="2" fill="#C99A58"/>
+                    <circle cx="120" cy="150" r="2" fill="#C99A58"/>
+                    <path d="M94 111 Q84 112 79 120 L68 145 Q65 151 71 155 L80 159 L98 129 Z"
+                        fill="url(#cardiganKnit)" stroke="${cardiDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M146 111 Q156 112 161 120 L172 145 Q175 151 169 155 L160 159 L142 129 Z"
+                        fill="url(#cardiganKnit)" stroke="${cardiDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M97 105 Q106 101 111 104 L111 168 Q99 172 86 168 L83 128 Q84 112 97 105 Z"
+                        fill="url(#cardiganKnit)" stroke="${cardiDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M129 104 Q136 101 145 105 Q158 112 157 128 L154 168 Q141 172 129 168 Z"
+                        fill="url(#cardiganKnit)" stroke="${cardiDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M91 113 Q88 139 92 162 M149 113 Q152 139 148 162"
+                        fill="none" stroke="${cardiLight}" stroke-width="2" opacity="0.72"/>
+                    <path d="M100 113 C105 120 98 126 104 133 C110 140 102 146 108 153 M140 113 C135 120 142 126 136 133 C130 140 138 146 132 153"
+                        fill="none" stroke="${cardiDark}" stroke-width="1.8" opacity="0.65"/>
+                    <path d="M86 165 Q99 169 111 165 M129 165 Q141 169 154 165" fill="none" stroke="${cardiDark}" stroke-width="1.6"/>
+                    <path d="M85 169 Q99 173 111 169 M129 169 Q141 173 155 169" fill="none" stroke="${cardiLight}" stroke-width="1.4"/>
+                    <path d="M66 144 Q73 149 81 151 M160 151 Q168 149 175 144 M69 152 Q74 156 80 157 M161 157 Q167 156 172 152"
+                        fill="none" stroke="${cardiLight}" stroke-width="1.7" stroke-linecap="round"/>
+                    <path d="M110 109 L110 164 M130 109 L130 164" stroke="${cardiDark}" stroke-width="1.1" opacity="0.6"/>
+                    <circle cx="110" cy="132" r="2.4" fill="#F1D49D" stroke="${cardiDark}" stroke-width="1"/>
+                    <circle cx="110" cy="147" r="2.4" fill="#F1D49D" stroke="${cardiDark}" stroke-width="1"/>
+                    <circle cx="130" cy="132" r="2.4" fill="#F1D49D" stroke="${cardiDark}" stroke-width="1"/>
+                    <circle cx="130" cy="147" r="2.4" fill="#F1D49D" stroke="${cardiDark}" stroke-width="1"/>
+                    <path d="M67 158 Q73 155 79 159 M161 159 Q167 155 173 158" fill="none" stroke="${cardiDark}" stroke-width="1.7"/>
                     <circle cx="69" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
                     <circle cx="171" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
-                    ${backpackStrapsSVG}
                 `;
             } else if (outfitType === 'mild_longsleeve') {
-                const shirtMain = isBear ? '#38BDF8' : '#F472B6';
-                const shirtDark = isBear ? '#0369A1' : '#BE185D';
+                const shirtMain = isBear ? '#718E91' : '#B97C77';
+                const shirtDark = isBear ? '#435F64' : '#7D504D';
                 clothesSVG = `
-                    <!-- 치노 팬츠 -->
-                    <rect x="97" y="168" width="18" height="48" rx="8" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.2"/>
-                    <rect x="125" y="168" width="18" height="48" rx="8" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.2"/>
-                    <!-- 노란 단화 -->
-                    <rect x="91" y="212" width="26" height="14" rx="7" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
-                    <rect x="123" y="212" width="26" height="14" rx="7" fill="#FBBF24" stroke="#B45309" stroke-width="2"/>
-
-                    <!-- 세일러 카라 스트라이프 긴팔 -->
-                    <rect x="88" y="107" width="64" height="63" rx="16" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2.2"/>
-                    <line x1="89" y1="127" x2="151" y2="127" stroke="#FFFFFF" stroke-width="4.5"/>
-                    <line x1="89" y1="145" x2="151" y2="145" stroke="#FFFFFF" stroke-width="4.5"/>
-                    <path d="M104 107 Q112 119 120 112 Q128 119 136 107 Z" fill="#FFFFFF" stroke="${shirtDark}" stroke-width="1.8"/>
-
-                    <rect x="67" y="111" width="19" height="47" rx="9.5" transform="rotate(12 75 114)" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2"/>
-                    <rect x="154" y="111" width="19" height="47" rx="9.5" transform="rotate(-12 165 114)" fill="${shirtMain}" stroke="${shirtDark}" stroke-width="2"/>
+                    ${trousersSVG('#7B746A', '#4E4C49', '#B4A895')}
+                    ${sneakersSVG('#EEE5D6', '#A77C55')}
+                    <defs>
+                        <linearGradient id="stripedCotton" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="${shirtDark}"/>
+                            <stop offset="0.35" stop-color="${shirtMain}"/>
+                            <stop offset="0.72" stop-color="${shirtMain}"/>
+                            <stop offset="1" stop-color="${shirtDark}"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M96 106 Q107 102 120 105 Q133 102 144 106 L151 166 Q120 174 89 166 Z"
+                        fill="url(#stripedCotton)" stroke="${shirtDark}" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M92 123 Q120 128 149 123 M90 141 Q120 146 150 141 M90 158 Q120 163 151 158"
+                        fill="none" stroke="#F5F0E7" stroke-width="3.8" opacity="0.92"/>
+                    <path d="M94 121 Q120 125 148 121 M92 139 Q120 143 149 139 M92 156 Q120 160 150 156"
+                        fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.82"/>
+                    <path d="M99 107 Q91 109 86 117 L72 145 Q69 151 75 155 L83 158 L101 129 Z"
+                        fill="url(#stripedCotton)" stroke="${shirtDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M141 107 Q149 109 154 117 L168 145 Q171 151 165 155 L157 158 L139 129 Z"
+                        fill="url(#stripedCotton)" stroke="${shirtDark}" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M78 144 Q84 148 91 150 M149 150 Q156 148 162 144" fill="none" stroke="#F5F0E7" stroke-width="2.5"/>
+                    <path d="M104 106 Q111 119 120 113 Q129 119 136 106 L130 125 Q120 130 110 125 Z"
+                        fill="#F5F0E7" stroke="${shirtDark}" stroke-width="1.7" stroke-linejoin="round"/>
+                    <path d="M120 120 L120 163" stroke="${shirtDark}" stroke-width="1.4" opacity="0.75"/>
+                    <circle cx="120" cy="134" r="1.8" fill="#F5E1B7"/>
+                    <circle cx="120" cy="146" r="1.8" fill="#F5E1B7"/>
+                    <path d="M132 131 Q139 129 145 132 L144 145 Q138 148 132 145 Z"
+                        fill="none" stroke="${shirtDark}" stroke-width="1.4"/>
+                    <path d="M134 132 Q139 130 143 132" fill="none" stroke="#D8C6AD" stroke-width="1"/>
+                    <path d="M91 165 Q120 171 149 165" fill="none" stroke="${shirtDark}" stroke-width="1.6"/>
+                    <path d="M93 168 Q120 174 147 168" fill="none" stroke="#E8D8C1" stroke-width="1.2"/>
                     <circle cx="69" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
                     <circle cx="171" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
-                    ${backpackStrapsSVG}
                 `;
             } else if (outfitType === 'summer_short') {
-                const teeMain = isBear ? '#34D399' : '#FDE047';
-                const teeDark = isBear ? '#047857' : '#A16207';
+                const teeMain = isBear ? '#7FA194' : '#D3AE73';
+                const teeDark = isBear ? '#496B60' : '#967248';
                 clothesSVG = `
-                    <!-- 반바지 & 다리 -->
-                    <rect x="95" y="164" width="21" height="24" rx="6" fill="#0284C7" stroke="#0369A1" stroke-width="2.2"/>
-                    <rect x="124" y="164" width="21" height="24" rx="6" fill="#0284C7" stroke="#0369A1" stroke-width="2.2"/>
-                    <line x1="105.5" y1="166" x2="105.5" y2="186" stroke="#38BDF8" stroke-width="1.6"/>
-                    <line x1="134.5" y1="166" x2="134.5" y2="186" stroke="#38BDF8" stroke-width="1.6"/>
-                    <rect x="99" y="187" width="14" height="27" rx="6" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
-                    <rect x="127" y="187" width="14" height="27" rx="6" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
-                    <!-- 여름 샌들 -->
-                    <rect x="91" y="212" width="26" height="13" rx="6.5" fill="#FB7185" stroke="#BE123C" stroke-width="2"/>
-                    <rect x="123" y="212" width="26" height="13" rx="6.5" fill="#FB7185" stroke="#BE123C" stroke-width="2"/>
-
-                    <!-- 반팔 티셔츠 -->
-                    <rect x="88" y="107" width="64" height="61" rx="16" fill="${teeMain}" stroke="${teeDark}" stroke-width="2.2"/>
-                    <circle cx="120" cy="139" r="14.5" fill="#FFFFFF" stroke="${teeDark}" stroke-width="1.2" opacity="0.8"/>
-                    <text x="120" y="146.5" text-anchor="middle" font-size="21">${isBear ? '🍯' : '🥕'}</text>
-
-                    <rect x="69" y="110" width="19" height="22" rx="8" transform="rotate(14 76 114)" fill="${teeMain}" stroke="${teeDark}" stroke-width="2"/>
-                    <rect x="152" y="110" width="19" height="22" rx="8" transform="rotate(-14 164 114)" fill="${teeMain}" stroke="${teeDark}" stroke-width="2"/>
-                    <rect x="67" y="129" width="14" height="31" rx="7" transform="rotate(14 75 132)" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
-                    <rect x="159" y="129" width="14" height="31" rx="7" transform="rotate(-14 165 132)" fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
-                    ${backpackStrapsSVG}
+                    <defs>
+                        <linearGradient id="summerCotton" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="${teeDark}"/>
+                            <stop offset="0.4" stop-color="${teeMain}"/>
+                            <stop offset="0.68" stop-color="${teeMain}"/>
+                            <stop offset="1" stop-color="${teeDark}"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M96 161 Q108 166 120 163 Q132 166 144 161 L142 187 Q133 192 120 189 Q107 192 98 187 Z"
+                        fill="#6C8291" stroke="#40586A" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M97 166 Q108 170 119 168 M121 168 Q132 170 143 166 M120 166 L120 187"
+                        fill="none" stroke="#BDD0D1" stroke-width="1.4" opacity="0.75"/>
+                    <path d="M100 185 Q109 189 117 186 M123 186 Q132 189 140 185" fill="none" stroke="#40586A" stroke-width="1.4"/>
+                    <path d="M100 186 Q99 196 100 210 Q101 216 107 216 Q113 216 114 210 L116 188 Z"
+                        fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    <path d="M124 188 L126 210 Q127 216 133 216 Q139 216 140 210 Q141 196 140 186 Z"
+                        fill="${furFill}" stroke="${furStroke}" stroke-width="1.8"/>
+                    <path d="M92 214 Q103 211 115 214 L118 222 Q117 226 112 227 H93 Q89 225 92 214 Z"
+                        fill="#B87857" stroke="#704834" stroke-width="1.8"/>
+                    <path d="M122 214 Q135 211 146 214 L149 222 Q148 226 143 227 H124 Q119 225 122 214 Z"
+                        fill="#B87857" stroke="#704834" stroke-width="1.8"/>
+                    <path d="M94 221 Q105 223 117 220 M123 220 Q135 223 147 221" fill="none" stroke="#F0D8B5" stroke-width="2"/>
+                    <path d="M95 218 L113 215 M97 223 L114 219 M125 219 L143 215 M126 223 L144 218"
+                        fill="none" stroke="#6D4638" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M97 107 Q107 102 120 105 Q133 102 143 107 L151 163 Q120 171 89 163 Z"
+                        fill="url(#summerCotton)" stroke="${teeDark}" stroke-width="2.2" stroke-linejoin="round" filter="url(#softShadow)"/>
+                    <path d="M98 109 Q89 109 84 116 L73 133 Q71 138 77 142 L85 145 L101 126 Z"
+                        fill="url(#summerCotton)" stroke="${teeDark}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M142 109 Q151 109 156 116 L167 133 Q169 138 163 142 L155 145 L139 126 Z"
+                        fill="url(#summerCotton)" stroke="${teeDark}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M74 135 Q80 140 87 140 M153 140 Q160 140 166 135" fill="none" stroke="#E8D9B9" stroke-width="2"/>
+                    <path d="M108 106 Q120 114 132 106 L129 113 Q120 119 111 113 Z"
+                        fill="#E9DDC7" stroke="${teeDark}" stroke-width="1.5"/>
+                    <path d="M90 158 Q120 164 150 158" fill="none" stroke="${teeDark}" stroke-width="1.4" opacity="0.7"/>
+                    <path d="M92 161 Q120 167 148 161" fill="none" stroke="#D8C9A8" stroke-width="1.1"/>
+                    ${isBear
+                        ? `<path d="M132 123 Q139 120 145 123 L145 136 Q138 139 132 136 Z" fill="#EEE2C7" stroke="${teeDark}" stroke-width="1.2"/>
+                           <path d="M135 128 Q138 125 142 128 L141 134 Q138 136 135 134 Z" fill="#D1A65C"/>
+                           <path d="M135 128 L141 128 M136 131 L141 131" stroke="#8E6338" stroke-width="1"/>`
+                        : `<path d="M132 123 Q139 120 145 123 L145 136 Q138 139 132 136 Z" fill="#EEE2C7" stroke="${teeDark}" stroke-width="1.2"/>
+                           <path d="M139 126 Q135 130 139 135 Q143 130 139 126 Z" fill="#D98358" stroke="#9E593D" stroke-width="0.8"/>
+                           <path d="M139 126 L137 123 M140 126 L143 123" stroke="#688A65" stroke-width="1.2"/>`
+                    }
+                    <path d="M78 138 Q74 143 73 152 L72 159 Q74 164 79 162 L85 151 L86 143 Z M162 138 Q166 143 167 152 L168 159 Q166 164 161 162 L155 151 L154 143 Z"
+                        fill="${furFill}" stroke="${furStroke}" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M67 156 Q71 152 77 155 Q83 158 82 164 Q80 171 73 170 Q66 169 65 163 Z M158 155 Q164 152 169 156 Q175 159 174 164 Q172 171 165 170 Q158 169 157 163 Z"
+                        fill="${furFill}" stroke="${furStroke}" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M69 162 Q72 164 76 162 M163 162 Q167 164 170 162"
+                        fill="none" stroke="${furStroke}" stroke-width="1.2" stroke-linecap="round"/>
                 `;
                 hatOrAccessorySVG = `
-                    <!-- 밀짚 햇빛 모자 & 리본띠 -->
-                    <ellipse cx="120" cy="53" rx="35" ry="6.5" fill="#F59E0B" stroke="#92400E" stroke-width="2"/>
-                    <path d="M97 53 C97 37, 143 37, 143 53 Z" fill="#FBBF24" stroke="#92400E" stroke-width="2"/>
-                    <path d="M107 41 L109 51 M120 39 L120 51 M133 41 L131 51" stroke="#D97706" stroke-width="1.4" opacity="0.7"/>
-                    <rect x="98" y="47" width="44" height="4.5" rx="2" fill="#EF4444"/>
+                    <path d="M85 54 Q120 46 155 54 Q148 62 120 62 Q92 62 85 54 Z"
+                        fill="#D3AE73" stroke="#8C6740" stroke-width="2"/>
+                    <path d="M98 53 Q98 36 120 35 Q142 36 142 53 Z"
+                        fill="#E7C991" stroke="#8C6740" stroke-width="2"/>
+                    <path d="M103 44 Q120 40 137 44 M99 50 Q120 46 141 50"
+                        fill="none" stroke="#B58A55" stroke-width="1.4"/>
+                    <path d="M96 54 Q120 59 144 54" fill="none" stroke="#F4E4C2" stroke-width="1.6"/>
+                    <path d="M103 49 Q120 52 137 49" fill="none" stroke="#A96958" stroke-width="3.2"/>
+                    <path d="M137 49 L144 47 L145 53 L138 54 Z" fill="#D8B179" stroke="#8C6740" stroke-width="1"/>
                 `;
             } else {
                 clothesSVG = `
-                    <!-- 레인부츠 -->
-                    <rect x="97" y="172" width="18" height="26" rx="7" fill="#334155"/>
-                    <rect x="125" y="172" width="18" height="26" rx="7" fill="#334155"/>
-                    <rect x="92" y="193" width="25" height="32" rx="9" fill="#F97316" stroke="#9A3412" stroke-width="2.2"/>
-                    <rect x="123" y="193" width="25" height="32" rx="9" fill="#F97316" stroke="#9A3412" stroke-width="2.2"/>
-                    <rect x="93" y="193" width="23" height="5" rx="2.5" fill="#FDBA74"/>
-                    <rect x="124" y="193" width="23" height="5" rx="2.5" fill="#FDBA74"/>
+                    <path d="M99 164 Q120 170 141 164 L139 188 L126 191 L120 181 L114 191 L101 188 Z"
+                        fill="#454F5A" stroke="#27323B" stroke-width="2"/>
+                    <path d="M99 168 Q120 173 141 168 M120 169 L120 184"
+                        fill="none" stroke="#9CA8AE" stroke-width="1.5"/>
+                    <path d="M98 183 L114 187 M126 187 L142 183" stroke="#303A43" stroke-width="1.4"/>
+                    <g filter="url(#softShadow)">
+                        <path d="M97 184 Q105 188 114 185 L116 214 Q119 218 118 226 H92 Q89 222 94 214 Z"
+                            fill="#B56F4F" stroke="#704634" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M126 185 Q135 188 143 184 L147 214 Q151 218 149 226 H123 Q120 222 124 214 Z"
+                            fill="#B56F4F" stroke="#704634" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M95 194 Q105 198 116 194 M124 194 Q136 198 146 194"
+                            fill="none" stroke="#E8C59C" stroke-width="2.8"/>
+                        <path d="M92 222 Q105 225 118 222 L118 227 H92 Z M123 222 Q136 225 149 222 L149 227 H123 Z"
+                            fill="#463A34" stroke="#2B2724" stroke-width="1"/>
+                        <path d="M99 192 L100 212 M107 194 L108 212 M131 194 L132 212 M139 192 L140 212"
+                            stroke="#D18C62" stroke-width="1.3" opacity="0.8"/>
+                    </g>
 
-                    <!-- 노란 방수 우비 -->
-                    <path d="M83 107 L157 107 L166 181 L74 181 Z" fill="#FACC15" stroke="#A16207" stroke-width="2.4" filter="url(#softShadow)"/>
-                    <path d="M92 114 L84 174" stroke="#FEF08A" stroke-width="2.6" stroke-linecap="round" opacity="0.65"/>
-                    <line x1="120" y1="107" x2="120" y2="181" stroke="#A16207" stroke-width="2.4"/>
-                    <circle cx="113" cy="126" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
-                    <circle cx="113" cy="144" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
-                    <circle cx="113" cy="162" r="3.4" fill="#EA580C" stroke="#9A3412" stroke-width="1"/>
-
-                    <rect x="65" y="111" width="20" height="47" rx="10" transform="rotate(14 75 114)" fill="#FACC15" stroke="#A16207" stroke-width="2"/>
-                    <rect x="155" y="111" width="20" height="47" rx="10" transform="rotate(-14 165 114)" fill="#FACC15" stroke="#A16207" stroke-width="2"/>
+                    <defs>
+                        <linearGradient id="rainShell" x1="0" y1="0" x2="1" y2="0">
+                            <stop stop-color="#A97C3E"/>
+                            <stop offset="0.36" stop-color="#E6C16F"/>
+                            <stop offset="0.62" stop-color="#D8AD58"/>
+                            <stop offset="1" stop-color="#A97C3E"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M96 109 Q87 110 81 119 L67 146 Q64 152 70 156 L79 160 L97 129 Z"
+                        fill="url(#rainShell)" stroke="#896235" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M144 109 Q153 110 159 119 L173 146 Q176 152 170 156 L161 160 L143 129 Z"
+                        fill="url(#rainShell)" stroke="#896235" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M97 105 Q107 101 120 104 Q133 101 143 105 Q155 109 158 123 L154 181 Q120 190 86 181 L82 123 Q85 109 97 105 Z"
+                        fill="url(#rainShell)" stroke="#896235" stroke-width="2.5" stroke-linejoin="round" filter="url(#softShadow)"/>
+                    <path d="M88 128 Q120 134 152 128 M87 151 Q120 157 153 151 M87 174 Q120 180 153 174"
+                        fill="none" stroke="#F2DA9E" stroke-width="2.3" opacity="0.84"/>
+                    <path d="M90 130 Q120 136 150 130 M89 153 Q120 159 151 153 M89 176 Q120 182 151 176"
+                        fill="none" stroke="#9E7745" stroke-width="1.2" opacity="0.75"/>
+                    <path d="M97 111 Q94 138 97 174 M143 111 Q146 138 143 174"
+                        fill="none" stroke="#F4E4BD" stroke-width="1.8" opacity="0.7"/>
+                    <path d="M120 111 L120 180" stroke="#8E6338" stroke-width="2"/>
+                    <path d="M123 114 L123 177" stroke="#F7E5B8" stroke-width="1.2"/>
+                    <path d="M91 154 Q100 151 109 154 L109 168 Q100 171 91 168 Z M131 154 Q140 151 149 154 L149 168 Q140 171 131 168 Z"
+                        fill="#C79D57" stroke="#896235" stroke-width="1.5"/>
+                    <path d="M93 156 Q100 153 107 156 M133 156 Q140 153 147 156" fill="none" stroke="#F5E3B7" stroke-width="1.4"/>
+                    <path d="M69 145 Q75 150 82 152 M158 152 Q165 150 171 145 M71 153 Q76 157 80 158 M160 158 Q164 157 169 153"
+                        fill="none" stroke="#F2DA9E" stroke-width="1.8" stroke-linecap="round"/>
                     <circle cx="67" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
                     <circle cx="173" cy="161" r="8.5" fill="${furFill}" stroke="${furStroke}" stroke-width="2"/>
 
-                    <!-- 동화풍 하늘색 우산 -->
-                    <path d="M176 76 L176 166 C176 173, 168 173, 168 167" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
-                    <path d="M136 82 Q176 38 216 82 Q196 76 176 82 Q156 76 136 82 Z" fill="#38BDF8" stroke="#0369A1" stroke-width="2.2"/>
-                    <path d="M156 79 Q176 54 196 79" fill="none" stroke="#BAE6FD" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="176" y1="56" x2="176" y2="82" stroke="#E0F2FE" stroke-width="2"/>
+                    <path d="M176 76 L176 166 C176 173 168 173 168 167" fill="none" stroke="#55616A" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M136 82 Q145 64 160 58 Q176 50 192 58 Q207 65 216 82 Q196 76 176 82 Q156 76 136 82 Z"
+                        fill="#7199A5" stroke="#3F6875" stroke-width="2.2" stroke-linejoin="round"/>
+                    <path d="M136 82 Q156 76 176 82 Q196 76 216 82 M176 58 L176 82 M156 65 Q166 69 176 82 M196 65 Q186 69 176 82"
+                        fill="none" stroke="#C9E1E0" stroke-width="1.6" opacity="0.9"/>
+                    <path d="M143 79 Q159 74 176 80 M209 79 Q193 74 176 80" fill="none" stroke="#385F6B" stroke-width="1"/>
                 `;
                 hatOrAccessorySVG = `
-                    <!-- 우비 후드 테두리 -->
-                    <path d="M81 71 C81 38, 159 38, 159 71" fill="none" stroke="#EAB308" stroke-width="10" stroke-linecap="round"/>
-                    <path d="M81 71 C81 38, 159 38, 159 71" fill="none" stroke="#FACC15" stroke-width="7.5" stroke-linecap="round"/>
-                    <path d="M84 67 C85 43, 155 43, 156 67" fill="none" stroke="#FEF9C3" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+                    <path d="M79 72 C80 43 96 34 120 34 C144 34 160 43 161 72"
+                        fill="none" stroke="#98713F" stroke-width="11" stroke-linecap="round"/>
+                    <path d="M80 71 C82 45 98 37 120 37 C142 37 158 45 160 71"
+                        fill="none" stroke="#D8AD58" stroke-width="7.5" stroke-linecap="round"/>
+                    <path d="M84 68 C87 47 101 41 120 41 C139 41 153 47 156 68"
+                        fill="none" stroke="#F6E4B7" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+                    <path d="M87 70 Q91 72 95 71 M145 71 Q149 72 153 70"
+                        fill="none" stroke="#8E6338" stroke-width="1.4" stroke-dasharray="2 2"/>
                 `;
             }
 
@@ -1319,24 +1414,6 @@
                 stageEl.innerHTML = renderCharacterSVG(preset.outfitType, currentCharacter);
             }
 
-            const presetContainer = document.getElementById('weather-preset-buttons');
-            if (presetContainer) {
-                presetContainer.innerHTML = WEATHER_PRESETS.map(p => {
-                    const isSelected = p.id === preset.id;
-                    return `
-                        <button onclick="selectWeatherPreset('${p.id}')"
-                            class="weather-chip flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border-2 text-center ${
-                                isSelected
-                                    ? 'bg-amber-400 border-amber-500 text-white shadow-md scale-[1.03]'
-                                    : 'bg-slate-50 hover:bg-amber-50 border-slate-200 text-slate-700'
-                            }">
-                            <span class="text-base sm:text-lg leading-none mb-0.5">${p.icon}</span>
-                            <span class="text-[11px] sm:text-xs leading-tight">${p.label}</span>
-                            <span class="text-[10px] opacity-80">${p.tempRange}</span>
-                        </button>
-                    `;
-                }).join('');
-            }
         }
 
         function setCharacterType(characterType) {
@@ -1345,20 +1422,6 @@
                 localStorage.setItem('morning_mission_character', characterType);
             } catch (e) {}
             playTone([659.25, 783.99], [0.08, 0.12], 'sine', 0.2);
-            renderWeatherOutfitBoard();
-        }
-
-        function selectWeatherPreset(presetId) {
-            const preset = WEATHER_PRESETS.find(p => p.id === presetId);
-            if (!preset) return;
-            currentWeatherState = {
-                presetId: preset.id,
-                temp: preset.sampleTemp,
-                locationName: '직접 선택한 날씨',
-                isLive: false,
-                conditionLabel: preset.conditionText
-            };
-            playTone([587.33, 783.99], [0.08, 0.12], 'sine', 0.2);
             renderWeatherOutfitBoard();
         }
 
@@ -1483,26 +1546,6 @@
                 `;
             }).join('');
 
-            updateProgressBar();
-        }
-
-        function updateProgressBar() {
-            const total = MISSIONS.length;
-            const doneCount = completedIds.length;
-            const percent = Math.round((doneCount / total) * 100);
-
-            const stepCounter = document.getElementById('step-counter');
-            const percentText = document.getElementById('percent-text');
-            const fillBar = document.getElementById('progress-bar-fill');
-            const rocket = document.getElementById('rocket-tracker');
-
-            if (stepCounter) stepCounter.textContent = `${doneCount} / ${total} 완료`;
-            if (percentText) percentText.textContent = `${percent}%`;
-            if (fillBar) fillBar.style.width = `${percent}%`;
-            if (rocket) {
-                const clampedLeft = Math.min(Math.max(percent, 3), 94);
-                rocket.style.left = `${clampedLeft}%`;
-            }
         }
 
         function toggleMission(missionId) {
